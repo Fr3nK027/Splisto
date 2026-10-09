@@ -132,6 +132,10 @@ rosso sull'icona dell'estensione. I selettori usati sono in `loggedIn` / `logged
 "Non verificabile" = la pagina non ha mostrato né il menu utente né il login entro 15 secondi (sito lento,
 captcha, pagina cambiata).
 
+Da connesso, su Vinted, Facebook e Subito il controllo guarda anche i primi campi del modulo (elenco `probe` nel
+file del sito). Se uno non si trova, la home mostra "Campi non trovati: …" sotto quel sito: il sito ha cambiato
+pagina, aggiorna i selettori o usa "Insegna" alla prossima compilazione.
+
 Dopo una nuova build, se Chrome ha ancora il service worker vecchio, **Verifica accessi** ricarica
 l'estensione da sola, riapre la dashboard e fa partire il controllo.
 
@@ -233,7 +237,7 @@ Ho provato gli adapter sulle pagine vere, da loggato, compilando i moduli **senz
 | Vinted | foto (3 caricate), titolo, descrizione, categoria (con ricerca), marca, taglia, condizione, colore, prezzo; like dalla pagina annuncio | visualizzazioni (le vede solo il venditore: testo da confermare) |
 | Subito | URL e flusso, titolo, descrizione, condizione, marca, taglia, "Per", prezzo, foto (max 6, verificato 10/2026) | testo delle statistiche |
 | Facebook | titolo, prezzo, categoria, condizione, foto (verificato 10/2026); testi di categorie e condizioni | descrizione sotto "Altri dettagli"; statistiche |
-| eBay | campo "Dicci cosa vuoi vendere" | modulo completo (`/lstng`): selettori ancora ipotetici, usa "Insegna" |
+| eBay | campo "Dicci cosa vuoi vendere"; modulo completo `/lstng` (10/2026): titolo, descrizione, prezzo, foto, marca, taglia, colore | categoria, corrispondenza e condizione le scegli tu (`/sl/prelist/identify`); il peso non c'è (solo il preset "Dimensioni del pacco") |
 | Wallapop | menu laterale (Portafoglio, profilo) | procedura a passi verificata 10/2026: l'estensione sceglie "Qualcosa che non uso più", scrive il riepilogo e inserisce le foto; i "Continua" li premi tu, poi il modulo si compila da solo |
 
 Su Subito e Facebook il caricamento automatico delle foto è acceso (`uploadPhotos: true` nel file del sito,
