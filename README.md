@@ -7,6 +7,10 @@ Estensione per Chrome ed Edge (Manifest V3) per scrivere un annuncio una volta s
 e carica le foto. **Il pulsante finale "Pubblica" lo premi sempre tu**: l'estensione non lo clicca mai
 (c'è anche un blocco esplicito nel codice, vedi `PUBLISH_WORDS` in `src/content/text.ts`).
 
+**Spenta finché non la usi.** Nessuno script gira sulle pagine che apri tu: il codice per i siti entra solo nelle
+schede aperte dall'estensione (pubblica, importa, verifica, statistiche) e sparisce quando le chiudi. Il controllo
+periodico in background è spento di default: lo accendi in Impostazioni.
+
 Tutto resta sul tuo PC: annunci e foto in IndexedDB, impostazioni in `chrome.storage.local`.
 Le uniche connessioni esterne sono i siti delle piattaforme e, solo se usi le funzioni ✨, il servizio AI che
 scegli nelle Impostazioni (Claude per impostazione predefinita; con Ollama nemmeno quello: resta tutto sul PC).
@@ -37,7 +41,7 @@ Clicca l'icona dell'estensione (fissala nella barra con la puntina) per aprire l
 Dopo `npm run build` l'estensione si accorge da sola della nuova versione (confronta il manifest in memoria con
 quello su disco) e si ricarica all'apertura della dashboard o al riavvio del service worker. I file della build
 hanno nomi fissi (`vite.config.ts`), così anche prima della ricarica le schede aperte dall'estensione trovano il
-loro codice. Le pagine dei siti già aperte vanno ricaricate a mano.
+loro codice.
 
 ## Servizio AI (per le funzioni ✨)
 
@@ -124,8 +128,8 @@ Note per sito:
 
 Nella home, ogni sito mostra **Connesso**, **Disconnesso**, **Non verificabile** o **Da verificare**, con l'ora
 dell'ultimo controllo. **Verifica accessi** apre per pochi secondi, in background, la pagina "nuovo annuncio" di
-ogni sito: se compare il menu utente sei connesso, se compare il login no. Il controllo parte anche da solo
-(di default ogni 6 ore, si cambia in Impostazioni) e lo stato si aggiorna anche mentre navighi sui siti.
+ogni sito: se compare il menu utente sei connesso, se compare il login no. Se vuoi, il controllo parte anche da
+solo (Impostazioni → "Controlla": ogni 3, 6, 12 o 24 ore; di default mai). Anche ogni compilazione aggiorna lo stato.
 
 Se un sito ti disconnette: notifica di Windows (cliccala per aprire il sito), banner rosso in home e numero
 rosso sull'icona dell'estensione. I selettori usati sono in `loggedIn` / `loggedOut` nel file del sito.
@@ -143,7 +147,7 @@ l'estensione da sola, riapre la dashboard e fa partire il controllo.
 
 Se metti un annuncio dal telefono (o direttamente sul sito), l'estensione lo importa da sola:
 **Importa annunci** nella home apre in background la pagina con i tuoi annunci di ogni sito e li legge.
-Lo fa anche in automatico subito dopo il controllo accessi periodico, e ogni volta che apri a mano quella pagina.
+Lo fa anche in automatico subito dopo il controllo accessi periodico, se lo hai acceso.
 
 Per ogni annuncio trovato:
 1. se è già in Splisto (stesso link o id sul sito), aggiorna stato e statistiche;
@@ -221,9 +225,8 @@ Ogni annuncio in lista mostra i numeri per sito. Gli annunci online da più di 1
 vengono segnalati con "valuta un ribasso".
 
 I numeri si leggono dalla pagina del tuo annuncio, usando il link salvato:
-- **Aggiorna statistiche** apre i tuoi annunci pubblicati in background, due alla volta, legge i numeri
-  e chiude le schede;
-- quando apri a mano la pagina di un tuo annuncio, i numeri si aggiornano da soli.
+**Aggiorna statistiche** importa i tuoi annunci e, dove i numeri stanno solo nella pagina dell'annuncio, la apre
+in background (due alla volta), legge i numeri e chiude le schede.
 
 Le statistiche vengono solo lette dalle pagine. L'estensione non usa API interne dei siti.
 Quello che il sito non mostra (es. le visualizzazioni a chi non è il venditore) resta "–".
@@ -301,7 +304,7 @@ service worker si vedono in `chrome://extensions` → **service worker** → Con
 ```
 manifest.json                 Manifest V3 (elaborato da @crxjs/vite-plugin)
 src/background/index.ts       service worker: apre le schede, assegna i job, aggiorna lo stato
-src/content/index.ts          content script: login, pagina giusta, avvio adapter
+src/content/index.ts          script dei siti (iniettato solo nelle schede dell'estensione): login, pagina giusta, adapter
 src/content/dom.ts            ricerca campi, scrittura compatibile con React, menu, foto (DataTransfer)
 src/content/text.ts           confronto testi e formati (con test in tests/)
 src/content/adapters/*.ts     un adapter per sito: fill(listing) → { ok, missingFields }

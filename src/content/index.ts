@@ -6,12 +6,11 @@ import { subito } from './adapters/subito'
 import { vinted } from './adapters/vinted'
 import { wallapop } from './adapters/wallapop'
 import { findOne, locatorFor, setLearned, sleep, type Locator } from './dom'
-import { goToOwnProfile, isMine, readDetail, readMine, readNow, wallapopEditUrl, wallapopItem } from './importers'
+import { goToOwnProfile, isMine, readDetail, readMine, wallapopEditUrl, wallapopItem } from './importers'
 import { SITES } from './selectors'
 import { norm, parseCount } from './text'
 
-// Gira su ogni pagina dei 5 siti, ma agisce solo nelle schede aperte dall'estensione
-// o sulle pagine dei tuoi annunci pubblicati (per leggere le statistiche).
+// Iniettato dal service worker solo nelle schede aperte da Splisto, a ogni pagina caricata (mai nella navigazione normale).
 const ADAPTERS: Record<Platform, Adapter> = { vinted, ebay, subito, facebook, wallapop }
 const platform = PLATFORMS.find((p) => location.hostname.includes(p))
 let current: JobListing | null = null // annuncio di questa scheda, per "Insegna"
@@ -37,9 +36,6 @@ function loggedOut(p: Platform): boolean {
 }
 
 const loggedIn = (p: Platform) => !!findOne(SITES[p].loggedIn) || !!SITES[p].loggedInText?.test(document.body?.innerText.slice(0, 500) ?? '')
-
-/** Pagina dello stesso dominio usato dal controllo accessi (ebay.com ha una sessione diversa da ebay.it). */
-const sameAuthDomain = (p: Platform) => location.hostname.endsWith(new URL(SITES[p].authUrl ?? SITES[p].url).hostname.replace(/^www\./, ''))
 
 /** Controllo accessi: aspetta che la pagina mostri o il menu utente o il login. */
 async function checkAuth(p: Platform) {
@@ -75,19 +71,6 @@ async function probeFields(p: Platform): Promise<string[] | undefined> {
   const missing = () => probe.filter(({ key }) => !findOne(locs(key))).map((f) => f.label)
   for (const end = Date.now() + 8000; missing().length && Date.now() < end; ) await sleep(500) // il modulo può comparire dopo il menu utente
   return missing()
-}
-
-/**
- * Navigando sul sito: se vedi il menu utente, l'accesso è attivo (solo conferma, mai "disconnesso").
- * Sulla pagina dei tuoi annunci aperta a mano, importa quello che vedi (senza scorrere la pagina).
- */
-async function passive(p: Platform) {
-  await sleep(3000)
-  if (loggedIn(p) && sameAuthDomain(p)) void send({ type: 'auth', platform: p, ok: true })
-  if (isMine(p)) {
-    const items = readNow(p)
-    if (items.length) void send({ type: 'imported', platform: p, items })
-  }
 }
 
 /** Importazione: pagina "i miei annunci" -> elenco annunci al service worker. */
@@ -133,7 +116,7 @@ async function start() {
 
 async function run(platform: Platform) {
   const job = (await send({ type: 'getJob', platform })) as JobReply
-  if (!job) return passive(platform)
+  if (!job) return // job finito (es. scheda tornata indietro dopo la pubblicazione)
   if (job.kind === 'auth') return checkAuth(platform)
   if (job.kind === 'import') return runImport(platform)
   // pagina pubblica dell'annuncio: si legge anche senza accesso (es. eBay con l'accesso solo su ebay.com)
@@ -323,7 +306,10 @@ async function teach(p: Platform, key: string, label: string) {
   bar.remove()
 }
 
-if (platform) {
+// Una volta per pagina: il service worker può segnalare "caricata" più volte per la stessa pagina.
+const page = globalThis as { __splisto?: boolean }
+if (platform && !page.__splisto) {
+  page.__splisto = true
   chrome.runtime.onMessage.addListener((m: TabMsg) => {
     if (m.type === 'teach') void teach(platform, m.key, m.label)
   })

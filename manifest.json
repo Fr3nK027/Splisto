@@ -26,40 +26,27 @@
   "permissions": [
     "storage",
     "unlimitedStorage",
+    "scripting",
     "alarms",
     "notifications"
   ],
   "host_permissions": [
+    "https://www.vinted.it/*",
+    "https://*.ebay.it/*",
+    "https://*.ebay.com/*",
+    "https://*.subito.it/*",
+    "https://www.facebook.com/*",
+    "https://*.wallapop.com/*",
     "https://api.anthropic.com/*",
     "https://*.vinted.net/*",
     "https://images.sbito.it/*",
     "https://*.fbcdn.net/*",
     "https://*.ebayimg.com/*",
-    "https://itm.ebaydesc.com/*",
-    "https://*.wallapop.com/*"
+    "https://itm.ebaydesc.com/*"
   ],
   "optional_host_permissions": [
     "https://*/*",
     "http://localhost/*",
     "http://127.0.0.1/*"
-  ],
-  "content_scripts": [
-    {
-      "matches": [
-        "https://www.vinted.it/*",
-        "https://*.ebay.it/*",
-        "https://*.ebay.com/*",
-        "https://*.subito.it/*",
-        "https://www.facebook.com/*",
-        "https://*.wallapop.com/*"
-      ],
-      "exclude_matches": [
-        "https://www.facebook.com/messages/*"
-      ],
-      "js": [
-        "src/content/index.ts"
-      ],
-      "run_at": "document_idle"
-    }
   ]
 }

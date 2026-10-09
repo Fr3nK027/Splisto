@@ -24,7 +24,7 @@ export interface Settings {
 export const DEFAULT_SETTINGS: Settings = {
   tone: 'neutro',
   sequential: true,
-  authEvery: 6,
+  authEvery: 0, // controllo periodico spento: lo accendi tu nelle Impostazioni
   ai: DEFAULT_AI,
   footers: {},
   fees: {

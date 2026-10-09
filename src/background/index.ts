@@ -1,3 +1,4 @@
+import contentScript from '../content/index.ts?iife'
 import { SITES } from '../content/selectors'
 import { conditionFrom, editUrlFor, htmlToText, idInUrl, PHOTO_URL, platformOfUrl, sameItem, sameUrl, SITE_URL, withDetails } from '../content/text'
 import { allListings, blobToWire, getListing, newListing, patchListing, saveListing, updateStats, updateStatus } from '../lib/db'
@@ -16,6 +17,7 @@ import { PLATFORMS, type AuthState, type ImportedItem, type ItemDetail, type Job
  *  - import: legge la pagina "i miei annunci" del sito (listingId vuoto);
  *  - detail: legge descrizione, foto e statistiche di un annuncio appena importato.
  * Tutto in storage.session perché il service worker può essere fermato in qualsiasi momento.
+ * Lo script dei siti gira solo nelle schede con un job (vedi tabs.onUpdated): il resto della navigazione non lo vede.
  */
 interface Job {
   listingId: string
@@ -316,9 +318,8 @@ function serial<T>(fn: () => Promise<T>): Promise<T> {
  *  1. stesso id/link sul sito -> aggiorna stato e statistiche;
  *  2. stesso oggetto già presente da un altro sito (titolo e prezzo simili) -> lo collega;
  *  3. altrimenti crea un annuncio nuovo e mette in coda la lettura di descrizione e foto.
- * `create: false` (pagina aperta a mano, non da un'importazione) = aggiorna soltanto, non crea e non collega.
  */
-const applyImport = (p: Platform, items: ImportedItem[], create: boolean, partial = false) =>
+const applyImport = (p: Platform, items: ImportedItem[], partial = false) =>
   serial(async () => {
     const all = await allListings()
     const details: QueueItem[] = []
@@ -334,11 +335,11 @@ const applyImport = (p: Platform, items: ImportedItem[], create: boolean, partia
       seenUrls.push(it.url)
       let l = all.find((x) => sameRemote(x.status[p], it))
       let linked = false
-      if (!l && create) {
+      if (!l) {
         l = all.find((x) => !x.sold && !x.status[p]?.remoteId && !x.status[p]?.url && sameItem(x, it))
         linked = !!l
       }
-      if (!l && (!create || it.sold)) continue // un articolo già venduto non diventa un annuncio nuovo
+      if (!l && it.sold) continue // un articolo già venduto non diventa un annuncio nuovo
 
       const statusFor = (prev: Listing['status'][Platform], keep: boolean) => ({
         ...prev,
@@ -400,10 +401,9 @@ const applyImport = (p: Platform, items: ImportedItem[], create: boolean, partia
         details.push({ listingId: l.id, platform: p, url: it.url, kind: 'detail' })
       }
     }
-    // Solo con un'importazione completa (non la pagina aperta a mano, non un elenco ancora in caricamento)
-    // e se la pagina ha mostrato qualcosa: un annuncio pubblicato che non compare più conta una volta;
+    // Solo con un'importazione completa (non un elenco ancora in caricamento) e se la pagina ha mostrato qualcosa: un annuncio pubblicato che non compare più conta una volta;
     // alla seconda di fila si segnala. Quelli pubblicati nell'ultima ora possono non essere ancora in elenco.
-    if (create && !partial && seen.size) {
+    if (!partial && seen.size) {
       for (const x of all) {
         if (!missingFromSite(x.status[p], !!x.sold, seen, seenUrls)) continue
         await patchListing(x.id, (y) => {
@@ -548,6 +548,14 @@ chrome.alarms.onAlarm.addListener((a) => {
   if (a.name === 'auth-timeout') void authTimeout()
 })
 
+// Ogni pagina caricata in una scheda aperta da Splisto riceve lo script (anche dopo login e redirect).
+chrome.tabs.onUpdated.addListener((tabId, info) => {
+  if (info.status !== 'complete') return
+  void getJob(tabId).then(
+    (job) => job && chrome.scripting.executeScript({ target: { tabId }, files: [contentScript] }).catch(() => {}), // about:blank, pagina di errore
+  )
+})
+
 chrome.tabs.onRemoved.addListener((tabId) => {
   void getJob(tabId).then(async (job) => {
     if (job?.kind !== 'fill') return
@@ -617,21 +625,8 @@ async function handle(msg: Msg, sender: chrome.runtime.MessageSender): Promise<u
     }
 
     case 'getJob': {
-      let job = await getJob(tabId)
-      if (job && job.platform !== msg.platform) return null
-      // Statistiche "al volo" valgono solo per la pagina che le ha richieste.
-      if (job?.kind === 'stats' && !job.autoClose && !sameUrl(job.url ?? '', sender.url ?? '')) {
-        await dropJob(tabId!)
-        job = undefined
-      }
-      if (!job) {
-        // Pagina di un tuo annuncio pubblicato aperta a mano: leggi le statistiche.
-        if (!SITES[msg.platform].published.item.test(sender.url ?? '')) return null
-        const hit = (await allListings()).find((l) => sameUrl(l.status[msg.platform]?.url ?? '', sender.url ?? ''))
-        if (!hit || tabId == null) return null
-        job = { listingId: hit.id, platform: msg.platform, kind: 'stats', url: sender.url }
-        await setJob(tabId, job)
-      }
+      const job = await getJob(tabId)
+      if (!job || job.platform !== msg.platform) return null
       if (job.kind !== 'fill') return { kind: job.kind } satisfies JobReply
       const l = await getListing(job.listingId)
       if (!l) return null
@@ -744,12 +739,11 @@ async function handle(msg: Msg, sender: chrome.runtime.MessageSender): Promise<u
 
     case 'imported': {
       const job = await jobFor(sender)
-      const created = msg.error ? 0 : await applyImport(msg.platform, msg.items, job?.kind === 'import', msg.partial)
-      if (job?.kind === 'import') {
-        await noteImport(msg.platform, created, msg.error)
-        await dropJob(tabId!)
-        if (job.autoClose) await chrome.tabs.remove(tabId!).catch(() => {})
-      }
+      if (job?.kind !== 'import') return 0
+      const created = msg.error ? 0 : await applyImport(msg.platform, msg.items, msg.partial)
+      await noteImport(msg.platform, created, msg.error)
+      await dropJob(tabId!)
+      if (job.autoClose) await chrome.tabs.remove(tabId!).catch(() => {})
       void notify('')
       return created
     }

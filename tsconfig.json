@@ -11,7 +11,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "allowImportingTsExtensions": true,
-    "types": ["chrome", "vite/client"]
+    "types": ["chrome", "vite/client", "@crxjs/vite-plugin/client"]
   },
   "include": ["src", "vite.config.ts"]
 }
