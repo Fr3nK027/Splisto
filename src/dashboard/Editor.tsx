@@ -1,4 +1,4 @@
-import { ArrowLeft, Check, Send } from 'lucide-react'
+import { ArrowLeft, Check, ExternalLink, Send, Sparkles } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { checkPhotos, describeFromPhotos, improveDescription, improveTitle, titlesPerSite } from '../lib/ai'
 import { deleteListing, getListing, saveFields } from '../lib/db'
@@ -182,6 +182,7 @@ export function Editor({ id }: { id: string }) {
 
   const aiBtn = (field: AiField, label: string, fn: () => Promise<Partial<AiState>>) => (
     <button className="btn-text ai-btn" disabled={ai?.loading} onClick={() => runAi(field, fn)}>
+      <Sparkles size={14} aria-hidden="true" />
       {ai?.loading && ai.field === field ? 'Attendi…' : label}
     </button>
   )
@@ -224,7 +225,7 @@ export function Editor({ id }: { id: string }) {
       <Photos photos={l.photos} onChange={(photos) => set({ photos })} />
       {l.photos.length > 0 && (
         <div className="under-photos">
-          {aiBtn('photos', '✨ Controlla foto', async () => ({ text: await checkPhotos(l) }))}
+          {aiBtn('photos', 'Controlla foto', async () => ({ text: await checkPhotos(l) }))}
           {aiBox('photos')}
         </div>
       )}
@@ -236,7 +237,7 @@ export function Editor({ id }: { id: string }) {
             <span className={l.title.length > limit ? 'error-text' : 'hint'}>
               {l.title.length}/{limit}
             </span>
-            {aiBtn('title', '✨ Migliora', async () => ({ text: await improveTitle(l, limit, tone) }))}
+            {aiBtn('title', 'Migliora', async () => ({ text: await improveTitle(l, limit, tone) }))}
           </div>
           <input
             id="title"
@@ -251,8 +252,8 @@ export function Editor({ id }: { id: string }) {
         <div className="field">
           <div className="field-head">
             <label htmlFor="description">Descrizione</label>
-            {l.photos.length > 0 && aiBtn('description', '✨ Dalle foto', async () => ({ text: await describeFromPhotos(l, tone) }))}
-            {aiBtn('description', '✨ Migliora', async () => ({ text: await improveDescription(l, tone) }))}
+            {l.photos.length > 0 && aiBtn('description', 'Dalle foto', async () => ({ text: await describeFromPhotos(l, tone) }))}
+            {aiBtn('description', 'Migliora', async () => ({ text: await improveDescription(l, tone) }))}
           </div>
           <textarea
             id="description"
@@ -279,7 +280,7 @@ export function Editor({ id }: { id: string }) {
                   rel="noreferrer"
                   title="Prezzi a cui oggetti simili sono stati venduti su eBay"
                 >
-                  Venduti su eBay ↗
+                  Venduti su eBay <ExternalLink size={13} aria-hidden="true" />
                 </a>
               )}
             </div>
@@ -349,7 +350,7 @@ export function Editor({ id }: { id: string }) {
           <p className="hint">Lascia vuoto per usare i valori principali. Categoria: “A &gt; B” = sottomenu.</p>
           {l.title.trim() &&
             l.platforms.length > 0 &&
-            aiBtn('titles', '✨ Titoli per sito', async () => ({ titles: await titlesPerSite(l, l.platforms, tone) }))}
+            aiBtn('titles', 'Titoli per sito', async () => ({ titles: await titlesPerSite(l, l.platforms, tone) }))}
         </div>
         {aiBox('titles')}
         {PLATFORMS.map((p) => {

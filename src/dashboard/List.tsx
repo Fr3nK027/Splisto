@@ -325,7 +325,7 @@ function Sync({ items, onNote, onReload }: { items: Listing[]; onNote: (s: strin
                 : 'Hai già annunci online? Premi per leggerli dai siti e importarli qui.'}{' '}
           {lastImport && !busy && `Ultima lettura dei siti: ${ago(lastImport.at)}.`}
         </p>
-        <button className="btn-primary" disabled={busy || !targets.length} onClick={() => void start()}>
+        <button className="btn-secondary" disabled={busy || !targets.length} onClick={() => void start()}>
           <RefreshCw size={16} aria-hidden="true" className={busy ? 'spin' : undefined} /> {label}
         </button>
       </footer>
@@ -409,11 +409,10 @@ export function List() {
     <>
       <header className="top">
         <div className="brand">
-          <img src="/icons/icon-48.png" alt="" width="44" height="44" />
-          <div>
+          <div className="nameplate">
             <h1>Splisto</h1>
-            <span className="brand-sub">Scrivi una volta, vendi ovunque</span>
           </div>
+          <span className="brand-sub">Scrivi una volta, vendi ovunque</span>
         </div>
         <div className="bar-actions">
           <a className="icon-btn" href="#/settings" title="Impostazioni" aria-label="Impostazioni">
@@ -521,10 +520,11 @@ export function List() {
                   </div>
                 </a>
                 <span className="chips">
-                  {l.platforms.map((p) => {
+                  {PLATFORMS.map((p) => {
+                    const on = l.platforms.includes(p)
                     const st = l.status[p]?.state ?? 'idle'
                     return (
-                      <span key={p} className="chip" title={`${PLATFORM_LABEL[p]}: ${STATE_LABEL[st]}`}>
+                      <span key={p} className={`chip${on ? '' : ' is-off'}`} title={on ? `${PLATFORM_LABEL[p]}: ${STATE_LABEL[st]}` : `${PLATFORM_LABEL[p]}: non scelto`}>
                         <Logo p={p} mark />
                         <Dot state={st} />
                         {l.stats[p] && <StatPair views={l.stats[p]!.views} likes={l.stats[p]!.likes} />}

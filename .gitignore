@@ -1,3 +1,6 @@
 node_modules
 dist
-.impeccable/
+# Impeccable: si versionano solo il brief della superficie e i token; il resto (catture, cache, log) è locale
+.impeccable/*
+!.impeccable/surfaces/
+!.impeccable/design.json

@@ -1,4 +1,4 @@
-import { Check, RotateCcw, Send, Trash2, Undo2, X } from 'lucide-react'
+import { Check, Dot, Minus, Plus, RotateCcw, Send, Trash2, Undo2, X } from 'lucide-react'
 import { useState } from 'react'
 import { bulkPatch, snapshot, type BulkOps, type TextMode } from '../lib/bulk'
 import { deleteListing, getListing, saveFields } from '../lib/db'
@@ -245,7 +245,7 @@ export function BulkBar({ ids, anyOnline, onlineOn, onChanged, onClear }: Props)
                   title={`${PLATFORM_LABEL[p]}: ${SITE_TITLE[op]}`}
                 >
                   <Logo p={p} mark />
-                  <span>{op === 'add' ? '+' : op === 'remove' ? '−' : '·'}</span>
+                  <span aria-hidden="true">{op === 'add' ? <Plus size={14} /> : op === 'remove' ? <Minus size={14} /> : <Dot size={14} />}</span>
                 </button>
               )
             })}

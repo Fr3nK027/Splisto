@@ -1,0 +1,639 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-09T12:03:42.928Z",
+  "title": "Design System: Splisto",
+  "extensions": {
+    "colorMeta": {
+      "velvet-ground": {
+        "role": "neutral",
+        "displayName": "Velvet Ground",
+        "canonical": "#0e1c17",
+        "cssVar": "--ground",
+        "tonalRamp": [
+          "#1a332a",
+          "#2c5849",
+          "#3f7e67",
+          "#52a386",
+          "#77bba3",
+          "#a0cfbe",
+          "#c9e4da",
+          "#eef7f3"
+        ]
+      },
+      "velvet-ground-hi": {
+        "role": "neutral",
+        "displayName": "Velvet Ground Hi",
+        "canonical": "#15291f",
+        "cssVar": "--ground-hi",
+        "tonalRamp": [
+          "#1a3326",
+          "#2d5842",
+          "#407d5e",
+          "#53a27a",
+          "#78ba99",
+          "#a1cfb8",
+          "#c9e3d6",
+          "#eef6f2"
+        ]
+      },
+      "velvet-tray": {
+        "role": "neutral",
+        "displayName": "Velvet Tray",
+        "canonical": "#112219",
+        "cssVar": "--tray",
+        "tonalRamp": [
+          "#1a3326",
+          "#2c5841",
+          "#3f7e5d",
+          "#52a378",
+          "#77bb97",
+          "#a0cfb6",
+          "#c9e4d5",
+          "#eef7f2"
+        ]
+      },
+      "velvet-well": {
+        "role": "neutral",
+        "displayName": "Velvet Well",
+        "canonical": "#08130f",
+        "cssVar": "--well",
+        "tonalRamp": [
+          "#17362b",
+          "#275d4a",
+          "#388569",
+          "#49ac88",
+          "#6fc3a4",
+          "#9bd5c0",
+          "#c6e7db",
+          "#edf7f4"
+        ]
+      },
+      "velvet-well-hi": {
+        "role": "neutral",
+        "displayName": "Velvet Well Hi",
+        "canonical": "#0b1813",
+        "cssVar": "--well-hi",
+        "tonalRamp": [
+          "#18342a",
+          "#2a5b48",
+          "#3b8166",
+          "#4da885",
+          "#73bfa2",
+          "#9dd2be",
+          "#c7e5da",
+          "#eef7f3"
+        ]
+      },
+      "brass": {
+        "role": "primary",
+        "displayName": "Brass",
+        "canonical": "#c8a35a",
+        "cssVar": "--brass",
+        "tonalRamp": [
+          "#392d13",
+          "#634d21",
+          "#8e6e2f",
+          "#b88e3d",
+          "#ccaa66",
+          "#dbc394",
+          "#ebddc2",
+          "#f9f4ec"
+        ]
+      },
+      "brass-hi": {
+        "role": "primary",
+        "displayName": "Polished Brass",
+        "canonical": "#e6c886",
+        "cssVar": "--brass-hi",
+        "tonalRamp": [
+          "#3f300d",
+          "#6e5317",
+          "#9c7620",
+          "#cb992a",
+          "#dcb256",
+          "#e7c989",
+          "#f1e0bb",
+          "#fbf5ea"
+        ]
+      },
+      "brass-lo": {
+        "role": "primary",
+        "displayName": "Dark Brass",
+        "canonical": "#8a6a30",
+        "cssVar": "--brass-lo",
+        "tonalRamp": [
+          "#392c14",
+          "#624c22",
+          "#8c6c31",
+          "#b68c3f",
+          "#caa768",
+          "#dac295",
+          "#eadcc2",
+          "#f8f4ec"
+        ]
+      },
+      "brass-ink": {
+        "role": "primary",
+        "displayName": "Brass Ink",
+        "canonical": "#1b1407",
+        "cssVar": "--brass-ink",
+        "tonalRamp": [
+          "#3d2d10",
+          "#694e1b",
+          "#966f27",
+          "#c29032",
+          "#d5ab5d",
+          "#e2c48e",
+          "#eeddbe",
+          "#faf5eb"
+        ]
+      },
+      "brass-line": {
+        "role": "primary",
+        "displayName": "Brass Line",
+        "canonical": "rgba(200, 163, 90, 0.28)",
+        "cssVar": "--brass-line",
+        "tonalRamp": [
+          "#392d13",
+          "#634d21",
+          "#8e6e2f",
+          "#b88e3d",
+          "#ccaa66",
+          "#dbc394",
+          "#ebddc2",
+          "#f9f4ec"
+        ]
+      },
+      "brass-soft": {
+        "role": "primary",
+        "displayName": "Brass Soft",
+        "canonical": "rgba(200, 163, 90, 0.1)",
+        "cssVar": "--brass-soft",
+        "tonalRamp": [
+          "#392d13",
+          "#634d21",
+          "#8e6e2f",
+          "#b88e3d",
+          "#ccaa66",
+          "#dbc394",
+          "#ebddc2",
+          "#f9f4ec"
+        ]
+      },
+      "ivory": {
+        "role": "neutral",
+        "displayName": "Ivory",
+        "canonical": "#ece3d0",
+        "cssVar": "--text",
+        "tonalRamp": [
+          "#362c16",
+          "#5e4c26",
+          "#866d36",
+          "#ae8d46",
+          "#c4a86e",
+          "#d6c299",
+          "#e8dcc5",
+          "#f8f4ed"
+        ]
+      },
+      "sage-muted": {
+        "role": "neutral",
+        "displayName": "Sage Muted",
+        "canonical": "#a3b3a8",
+        "cssVar": "--muted",
+        "tonalRamp": [
+          "#232a25",
+          "#3c4940",
+          "#55675b",
+          "#6f8676",
+          "#8fa395",
+          "#b1beb5",
+          "#d2dad5",
+          "#f1f3f2"
+        ]
+      },
+      "sage-faint": {
+        "role": "neutral",
+        "displayName": "Sage Faint",
+        "canonical": "#7f9186",
+        "cssVar": "--faint",
+        "tonalRamp": [
+          "#232926",
+          "#3d4741",
+          "#57655d",
+          "#718478",
+          "#91a197",
+          "#b2bdb6",
+          "#d3d9d6",
+          "#f1f3f2"
+        ]
+      },
+      "hairline": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "rgba(236, 227, 208, 0.08)",
+        "cssVar": "--line",
+        "tonalRamp": [
+          "#362c16",
+          "#5e4c26",
+          "#866d36",
+          "#ae8d46",
+          "#c4a86e",
+          "#d6c299",
+          "#e8dcc5",
+          "#f8f4ed"
+        ]
+      },
+      "hairline-strong": {
+        "role": "neutral",
+        "displayName": "Hairline Strong",
+        "canonical": "rgba(236, 227, 208, 0.16)",
+        "cssVar": "--line-strong",
+        "tonalRamp": [
+          "#362c16",
+          "#5e4c26",
+          "#866d36",
+          "#ae8d46",
+          "#c4a86e",
+          "#d6c299",
+          "#e8dcc5",
+          "#f8f4ed"
+        ]
+      },
+      "verdigris": {
+        "role": "secondary",
+        "displayName": "Verdigris",
+        "canonical": "#5cc596",
+        "cssVar": "--ok",
+        "tonalRamp": [
+          "#143828",
+          "#236246",
+          "#328b63",
+          "#40b580",
+          "#69c99e",
+          "#96dabb",
+          "#c3ead8",
+          "#ecf8f3"
+        ]
+      },
+      "verdigris-soft": {
+        "role": "secondary",
+        "displayName": "Verdigris Soft",
+        "canonical": "rgba(92, 197, 150, 0.12)",
+        "cssVar": "--ok-soft",
+        "tonalRamp": [
+          "#143828",
+          "#236246",
+          "#328b63",
+          "#40b580",
+          "#69c99e",
+          "#96dabb",
+          "#c3ead8",
+          "#ecf8f3"
+        ]
+      },
+      "amber": {
+        "role": "secondary",
+        "displayName": "Amber",
+        "canonical": "#e8b04a",
+        "cssVar": "--warn",
+        "tonalRamp": [
+          "#442f09",
+          "#76510f",
+          "#a77415",
+          "#d9961c",
+          "#e8b04a",
+          "#efc880",
+          "#f6dfb7",
+          "#fcf5e8"
+        ]
+      },
+      "amber-soft": {
+        "role": "secondary",
+        "displayName": "Amber Soft",
+        "canonical": "rgba(232, 176, 74, 0.12)",
+        "cssVar": "--warn-soft",
+        "tonalRamp": [
+          "#442f09",
+          "#76510f",
+          "#a77415",
+          "#d9961c",
+          "#e8b04a",
+          "#efc880",
+          "#f6dfb7",
+          "#fcf5e8"
+        ]
+      },
+      "vermilion": {
+        "role": "secondary",
+        "displayName": "Vermilion",
+        "canonical": "#ef6a4f",
+        "cssVar": "--err",
+        "tonalRamp": [
+          "#461106",
+          "#7a1e0b",
+          "#ad2a10",
+          "#e03714",
+          "#ee6144",
+          "#f3907c",
+          "#f8c0b4",
+          "#fdebe8"
+        ]
+      },
+      "vermilion-soft": {
+        "role": "secondary",
+        "displayName": "Vermilion Soft",
+        "canonical": "rgba(239, 106, 79, 0.12)",
+        "cssVar": "--err-soft",
+        "tonalRamp": [
+          "#461106",
+          "#7a1e0b",
+          "#ad2a10",
+          "#e03714",
+          "#ee6144",
+          "#f3907c",
+          "#f8c0b4",
+          "#fdebe8"
+        ]
+      },
+      "idle-moss": {
+        "role": "secondary",
+        "displayName": "Idle Moss",
+        "canonical": "#4f6359",
+        "cssVar": "--idle",
+        "tonalRamp": [
+          "#222b26",
+          "#3b4a42",
+          "#54695e",
+          "#6d887a",
+          "#8ea499",
+          "#b0c0b8",
+          "#d2dbd6",
+          "#f1f4f2"
+        ]
+      },
+      "brass-metal": {
+        "role": "primary",
+        "displayName": "Brass Metal",
+        "canonical": "linear-gradient(180deg, #dcbc78, #b9934d)",
+        "cssVar": "--metal",
+        "tonalRamp": [
+          "#392d13",
+          "#634d21",
+          "#8e6e2f",
+          "#b88e3d",
+          "#ccaa66",
+          "#dbc394",
+          "#ebddc2",
+          "#f9f4ec"
+        ],
+        "note": "Pressables only: primary button fill and checked-toggle tick."
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Page titles, Marcellus (2.2rem on settings)."
+      },
+      "nameplate": {
+        "displayName": "Nameplate",
+        "purpose": "SPLISTO lettering, uppercase, Polished Brass, over a hairline brass rule."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Panel, tray, card, status and alert headings; summaries, legends, empty-state titles. Listing title input uses Marcellus at 1.5rem."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Listing names in slots, one line, ellipsized."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "All UI copy. Set on body explicitly: Chrome injects system-ui at 75% on extension pages."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Uppercase tracked form labels; pills and count captions at 0.68-0.7rem."
+      },
+      "numeral": {
+        "displayName": "Numeral",
+        "purpose": "Tabular site counts in the rail."
+      }
+    },
+    "textures": [
+      {
+        "name": "nap",
+        "value": "--nap: SVG feTurbulence fractalNoise, baseFrequency '0.9 0.12' (directional), 220px tile, opacity 0.16",
+        "purpose": "Velvet pile over html, body, trays (panels, cards, sheets, listing tray) and wells (slots, site cells)."
+      }
+    ],
+    "shadows": [
+      {
+        "name": "recess",
+        "value": "inset 0 2px 5px rgba(0, 0, 0, 0.55), inset 0 -1px 0 rgba(236, 227, 208, 0.04)",
+        "purpose": "Wells, fields, slots, site cells, toggles, icon buttons."
+      },
+      {
+        "name": "lift",
+        "value": "0 1px 0 rgba(236, 227, 208, 0.05) inset, 0 10px 24px -12px rgba(0, 0, 0, 0.7)",
+        "purpose": "Trays, panels, cards, sheets."
+      },
+      {
+        "name": "lift-lg",
+        "value": "0 1px 0 rgba(236, 227, 208, 0.06) inset, 0 24px 48px -18px rgba(0, 0, 0, 0.85)",
+        "purpose": "Sticky bulk bar and publish dock."
+      },
+      {
+        "name": "button-primary",
+        "value": "0 1px 0 rgba(255, 240, 200, 0.6) inset, 0 -1px 0 rgba(0, 0, 0, 0.3) inset, 0 8px 18px -10px rgba(0, 0, 0, 0.9)",
+        "purpose": "Brass metal button bevel and drop."
+      },
+      {
+        "name": "photo-seated",
+        "value": "0 2px 4px rgba(0, 0, 0, 0.5)",
+        "purpose": "Thumbnail at rest in its recess."
+      },
+      {
+        "name": "photo-lifted",
+        "value": "0 12px 18px -6px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(200, 163, 90, 0.28)",
+        "purpose": "Thumbnail on slot hover or keyboard focus."
+      },
+      {
+        "name": "focus-field",
+        "value": "var(--recess), 0 0 0 3px rgba(200, 163, 90, 0.18)",
+        "purpose": "Field focus, with solid brass border, no outline."
+      },
+      {
+        "name": "focus-ring",
+        "value": "outline: 2px solid #e6c886; outline-offset: 2px",
+        "purpose": "Global :focus-visible."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "All transitions and entrances."
+      },
+      {
+        "name": "t",
+        "value": "180ms var(--ease)",
+        "purpose": "Default state transition (color, border, background)."
+      },
+      {
+        "name": "photo-lift",
+        "value": "translateY(-3px), 220ms var(--ease)",
+        "purpose": "Signature: thumbnail rises out of its recess on hover/focus."
+      },
+      {
+        "name": "rise",
+        "value": "360ms var(--ease), from opacity 0 translateY(14px)",
+        "purpose": "Bulk bar entrance (AI preview at 280ms)."
+      },
+      {
+        "name": "pop",
+        "value": "320ms var(--ease), scale 0.4 > 1.15 > 1",
+        "purpose": "Checked-toggle tick."
+      },
+      {
+        "name": "pulse",
+        "value": "1.2s ease-in-out infinite, opacity 0.35 at 50%",
+        "purpose": "Opening mark (1s on the checking pill)."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "animation and transition 1ms, 1 iteration; photo lift removed",
+        "purpose": "State colors and borders still change; movement stops."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "tablet",
+        "value": "980px"
+      },
+      {
+        "name": "tray-stack",
+        "value": "760px"
+      },
+      {
+        "name": "mobile",
+        "value": "560px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Brass metal, only on pressables.",
+      "html": "<button class=\"ds-btn-primary\">Nuovo annuncio</button>",
+      "css": ".ds-btn-primary{display:inline-flex;align-items:center;gap:8px;background:var(--metal);color:var(--brass-ink);border:0;border-radius:var(--radius-sm);padding:10px 18px;font-weight:700;letter-spacing:.01em;cursor:pointer;box-shadow:0 1px 0 rgba(255,240,200,.6) inset,0 -1px 0 rgba(0,0,0,.3) inset,0 8px 18px -10px rgba(0,0,0,.9);transition:filter var(--t),transform var(--t)}.ds-btn-primary:hover{filter:brightness(1.08)}.ds-btn-primary:active{transform:translateY(1px)}.ds-btn-primary:focus-visible{outline:2px solid var(--brass-hi);outline-offset:2px}"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Engraved brass outline, ivory text, brass icon.",
+      "html": "<button class=\"ds-btn-secondary\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M21 12a9 9 0 1 1-3-6.7L21 8\"/><path d=\"M21 3v5h-5\"/></svg>Sincronizza</button>",
+      "css": ".ds-btn-secondary{display:inline-flex;align-items:center;gap:7px;background:transparent;color:var(--text);border:1px solid var(--brass-line);border-radius:var(--radius-sm);padding:7px 13px;font-weight:600;font-size:.88rem;cursor:pointer;transition:border-color var(--t),background var(--t),color var(--t)}.ds-btn-secondary svg{color:var(--brass)}.ds-btn-secondary:hover{border-color:var(--brass);background:var(--brass-soft);color:var(--brass-hi)}.ds-btn-secondary:focus-visible{outline:2px solid var(--brass-hi);outline-offset:2px}"
+    },
+    {
+      "name": "Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Recessed well; solid brass border and wash on focus.",
+      "html": "<input class=\"ds-input\" placeholder=\"Titolo\">",
+      "css": ".ds-input{background:var(--well);color:var(--text);border:1px solid var(--line-strong);border-radius:var(--radius-sm);box-shadow:var(--recess);padding:10px 13px;font:inherit;caret-color:var(--brass);transition:border-color var(--t),box-shadow var(--t)}.ds-input::placeholder{color:var(--faint)}.ds-input:hover{border-color:var(--brass-line)}.ds-input:focus{outline:none;border-color:var(--brass);box-shadow:var(--recess),0 0 0 3px rgba(200,163,90,.18)}"
+    },
+    {
+      "name": "State Pill",
+      "kind": "chip",
+      "refersTo": "tag",
+      "description": "Engraved uppercase state plate with a leading dot; never filled.",
+      "html": "<span class=\"ds-pill\">Connesso</span>",
+      "css": ".ds-pill{display:inline-flex;align-items:center;gap:7px;font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:3px 9px 3px 8px;border-radius:4px;border:1px solid currentColor;color:var(--ok)}.ds-pill::before{content:\"\";width:7px;height:7px;border-radius:50%;background:currentColor}"
+    },
+    {
+      "name": "Listing Slot",
+      "kind": "card",
+      "refersTo": "slot",
+      "description": "Signature: slot on the velvet tray, five state marks in fixed cells, photo lifts out of its recess.",
+      "html": "<div class=\"ds-tray\"><a class=\"ds-slot\" href=\"#\"><span class=\"ds-thumb\"></span><span class=\"ds-slot-text\"><strong>Giacca di lana</strong><span class=\"ds-price\">45 €</span></span><span class=\"ds-marks\"><i class=\"ds-dot ds-pub\"></i><i class=\"ds-dot ds-half\"></i><i class=\"ds-dot\"></i><i class=\"ds-dot ds-err\"></i><i class=\"ds-dot ds-fill\"></i></span></a></div>",
+      "css": ".ds-tray{background:var(--nap),var(--tray);border:1px solid var(--brass-line);border-radius:var(--radius-lg);box-shadow:var(--lift);padding:10px}.ds-slot{display:flex;align-items:center;gap:16px;padding:10px 14px 10px 8px;background:var(--nap),var(--well);border:1px solid transparent;border-radius:var(--radius);box-shadow:var(--recess);color:var(--text);text-decoration:none;transition:border-color var(--t)}.ds-slot:hover{border-color:var(--brass-line)}.ds-slot:focus-visible{outline:2px solid var(--brass-hi);outline-offset:2px}.ds-thumb{width:72px;height:72px;flex-shrink:0;border-radius:8px;background:var(--well-hi);box-shadow:0 2px 4px rgba(0,0,0,.5);transition:transform 220ms var(--ease),box-shadow 220ms var(--ease)}.ds-slot:hover .ds-thumb,.ds-slot:focus-visible .ds-thumb{transform:translateY(-3px);box-shadow:0 12px 18px -6px rgba(0,0,0,.85),0 0 0 1px var(--brass-line)}.ds-slot-text{display:flex;flex-direction:column;gap:5px;flex:1;min-width:0}.ds-slot-text strong{font-weight:650}.ds-price{color:var(--brass-hi);font-weight:700}.ds-marks{display:grid;grid-template-columns:repeat(5,54px);justify-items:center}.ds-dot{position:relative;width:10px;height:10px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--idle)}.ds-pub{background:var(--ok);box-shadow:0 0 0 3px var(--ok-soft)}.ds-fill{box-shadow:inset 0 0 0 1.5px var(--ok);background:radial-gradient(circle,var(--ok) 0 2px,transparent 2.5px)}.ds-half{box-shadow:inset 0 0 0 1.5px var(--warn);background:linear-gradient(90deg,var(--warn) 50%,transparent 50%)}.ds-err{box-shadow:inset 0 0 0 1.5px var(--err)}.ds-err::after{content:\"\";position:absolute;left:-2px;right:-2px;top:50%;height:1.5px;margin-top:-.75px;background:var(--err);transform:rotate(-45deg)}@media (prefers-reduced-motion:reduce){.ds-slot:hover .ds-thumb,.ds-slot:focus-visible .ds-thumb{transform:none}}"
+    },
+    {
+      "name": "Site Toggle",
+      "kind": "custom",
+      "refersTo": "site-toggle",
+      "description": "Recessed site well; checked gets brass border, full-color logo and a brass-metal tick.",
+      "html": "<label class=\"ds-toggle\"><input type=\"checkbox\" checked><span class=\"ds-logo\">Vinted</span><svg class=\"ds-tick\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m5 12 5 5 9-10\"/></svg></label>",
+      "css": ".ds-toggle{position:relative;display:flex;align-items:center;justify-content:center;height:50px;padding:0 10px;min-width:120px;background:var(--well);border:1px solid var(--line);border-radius:10px;box-shadow:var(--recess);cursor:pointer;transition:border-color var(--t)}.ds-toggle input{position:absolute;opacity:0}.ds-logo{font-weight:700;opacity:.35;filter:grayscale(1)}.ds-toggle:hover{border-color:var(--brass-line)}.ds-toggle:has(input:checked){border-color:var(--brass);box-shadow:var(--recess),0 0 0 1px var(--brass)}.ds-toggle:has(input:checked) .ds-logo{opacity:1;filter:none}.ds-toggle:has(input:focus-visible){outline:2px solid var(--brass-hi);outline-offset:2px}.ds-tick{position:absolute;top:-7px;right:-7px;width:18px;height:18px;padding:2px;border-radius:4px;color:var(--brass-ink);background:var(--metal);opacity:0}.ds-toggle:has(input:checked) .ds-tick{opacity:1;animation:ds-pop 320ms var(--ease)}@keyframes ds-pop{0%{transform:scale(.4)}60%{transform:scale(1.15)}}"
+    },
+    {
+      "name": "Nameplate",
+      "kind": "nav",
+      "refersTo": "nameplate",
+      "description": "SPLISTO brass lettering over a hairline brass rule.",
+      "html": "<div class=\"ds-nameplate\"><span>Splisto</span></div>",
+      "css": ".ds-nameplate{display:inline-block;padding:0 2px 6px;border-bottom:1px solid var(--brass-line)}.ds-nameplate span{font-family:var(--display);color:var(--brass-hi);font-size:1.6rem;letter-spacing:.3em;margin-right:-.3em;text-transform:uppercase;line-height:1.1}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Vetrina di velluto",
+    "overview": "Every listing is an object seated in its own recess on a dark bottle-green velvet tray; the five marketplaces are brass tags along its rail. The ground has nap: a fine, directional noise texture drawn once as an SVG and laid over the html ground, the body, every tray and every well. Depth is physical: trays rise on soft downward shadows, wells and fields sink with a dark top edge.\n\nOne dark theme only (`color-scheme: dark`). Density is an operator's: long listing slots at one photo scale, state read at a glance in fixed cells, Italian copy throughout. The system refuses the category default of near-black SaaS panels, one neon accent and glowing card edges.",
+    "keyCharacteristics": [
+      "Velvet ground, tray and well tones, all carrying the nap texture.",
+      "Brass is solid (metal fill) only on what can be pressed; everywhere else it is engraved: brass outline, brass text.",
+      "Ivory text in three tiers; the faintest still clears 4.5:1 on velvet.",
+      "Site state is a mark in a fixed cell, never a free-floating badge.",
+      "Engraved roman headings (Marcellus), one workhorse sans (Albert Sans) for every control and number."
+    ],
+    "rules": [
+      {
+        "name": "The Pressable Brass Rule",
+        "body": "Solid brass metal appears only on an element that can be pressed (primary button, checked-toggle tick). Anything informational uses engraved brass: a brass outline or brass text on velvet.",
+        "section": "colors"
+      },
+      {
+        "name": "The Faint Floor Rule",
+        "body": "The faintest text tier (sage-faint) must keep at least 4.5:1 on the velvet ground and wells; never introduce a dimmer text tone.",
+        "section": "colors"
+      },
+      {
+        "name": "The Explicit Body Rule",
+        "body": "Set the body font family and size on `body` itself, not only on `:root`: Chrome injects `body { font-family: system-ui; font-size: 75% }` on extension pages.",
+        "section": "typography"
+      },
+      {
+        "name": "The Two Voices Rule",
+        "body": "Marcellus is for names and headings (plus the title field); every control, label and number is Albert Sans.",
+        "section": "typography"
+      },
+      {
+        "name": "The Nap Everywhere Rule",
+        "body": "Any new velvet surface (ground, tray, well) layers `var(--nap)` over its tone; a flat green fill reads as plastic.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Down-Light Rule",
+        "body": "Shadows only fall downward; no glows, no colored halos except the 3px brass focus wash on fields and the verdigris halo on the published mark.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** layer the nap texture on every velvet surface and keep wells darker than the ground.",
+      "**Do** reserve brass metal for pressables; use brass outlines and brass text everywhere else.",
+      "**Do** show site state as a mark in its fixed cell, in fixed site order, with the words in a title or pill.",
+      "**Do** keep every photo at one scale and on the same well ground.",
+      "**Do** honor reduced motion: transitions and animations collapse to 1ms and the photo stops lifting, but color and border state changes stay visible."
+    ],
+    "donts": [
+      "**Don't** add a light theme or any surface outside the velvet tones.",
+      "**Don't** fill informational elements (pills, tags, headings, badges) with solid brass.",
+      "**Don't** add glows, neon accents or glowing card edges.",
+      "**Don't** use light-ground logo variants.",
+      "**Don't** set UI controls or numbers in Marcellus, or let body text fall back to the extension's system-ui default."
+    ]
+  }
+}

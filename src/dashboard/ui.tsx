@@ -89,19 +89,15 @@ export function useAuth(): Partial<Record<Platform, AuthState>> {
   return auth
 }
 
-// Loghi ufficiali in public/logos (presi dai siti, 10/2026). Varianti scure dove il colore originale non si legge.
+// Loghi ufficiali in public/logos (presi dai siti, 10/2026). La dashboard è sempre scura: varianti per fondo scuro dove servono.
 const DARK_LOGO: Record<string, string> = { vinted: 'vinted-dark', 'vinted-mark': 'vinted-mark-dark' }
 
 /** Logo del sito: `mark` = icona quadrata per spazi piccoli, altrimenti il logotipo. */
 export function Logo({ p, mark = false }: { p: Platform; mark?: boolean }) {
   const name = p === 'facebook' ? 'facebook' : mark ? `${p}-mark` : p
-  const dark = DARK_LOGO[name]
   return (
     <span className={`logo logo-${mark ? 'mark' : 'word'} logo-${p}`}>
-      <picture>
-        {dark && <source srcSet={`/logos/${dark}.svg`} media="(prefers-color-scheme: dark)" />}
-        <img src={`/logos/${name}.svg`} alt={PLATFORM_LABEL[p]} />
-      </picture>
+      <img src={`/logos/${DARK_LOGO[name] ?? name}.svg`} alt={PLATFORM_LABEL[p]} />
       {/* Facebook non ha un logotipo "Marketplace": icona + nome del servizio */}
       {p === 'facebook' && !mark && <span className="logo-sub">Marketplace</span>}
     </span>

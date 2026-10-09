@@ -1,156 +1,258 @@
 ---
 name: Splisto
-mode: operate
-source: src/dashboard/style.css
+description: Write a listing once, send it to five marketplaces; every item seated on a velvet tray.
 colors:
-  light:
-    bg: "#f3f0ea"
-    bg-grad: "#ece7de"
-    surface: "#fffdf9"
-    surface-2: "#f8f5ef"
-    sunken: "#efeae2"
-    text: "#1c1915"
-    muted: "#6b6359"
-    faint: "#7a7166"
-    border: "#e4ddd1"
-    border-strong: "#cfc6b7"
-    field: "#fffefb"
-    accent: "#ff5a1f"
-    accent-hover: "#ff6f3c"
-    accent-text: "#1a0d05"
-    accent-strong: "#c2410c"
-    accent-soft: "rgba(255, 90, 31, 0.1)"
-    accent-line: "rgba(255, 90, 31, 0.45)"
-    ok: "#15803d"
-    ok-soft: "rgba(21, 128, 61, 0.1)"
-    warn: "#a35208"
-    warn-soft: "rgba(217, 119, 6, 0.12)"
-    err: "#c0262d"
-    err-soft: "rgba(192, 38, 45, 0.09)"
-    idle: "#b3aa9d"
-  dark:
-    bg: "#121110"
-    bg-grad: "#181614"
-    surface: "#1b1a18"
-    surface-2: "#221f1c"
-    sunken: "#151412"
-    text: "#f4efe7"
-    muted: "#a59d91"
-    faint: "#8d8478"
-    border: "#2e2a26"
-    border-strong: "#423c35"
-    field: "#161513"
-    accent: "#ff6a2b"
-    accent-hover: "#ff8250"
-    accent-text: "#1a0d05"
-    accent-strong: "#ff8d5c"
-    accent-soft: "rgba(255, 106, 43, 0.13)"
-    accent-line: "rgba(255, 106, 43, 0.55)"
-    ok: "#4ade80"
-    ok-soft: "rgba(74, 222, 128, 0.11)"
-    warn: "#f5b041"
-    warn-soft: "rgba(245, 176, 65, 0.12)"
-    err: "#ff6b6f"
-    err-soft: "rgba(255, 107, 111, 0.12)"
-    idle: "#5a534b"
+  velvet-ground: "#0e1c17"
+  velvet-ground-hi: "#15291f"
+  velvet-tray: "#112219"
+  velvet-well: "#08130f"
+  velvet-well-hi: "#0b1813"
+  brass: "#c8a35a"
+  brass-hi: "#e6c886"
+  brass-lo: "#8a6a30"
+  brass-ink: "#1b1407"
+  brass-line: "rgba(200, 163, 90, 0.28)"
+  brass-soft: "rgba(200, 163, 90, 0.1)"
+  ivory: "#ece3d0"
+  sage-muted: "#a3b3a8"
+  sage-faint: "#7f9186"
+  hairline: "rgba(236, 227, 208, 0.08)"
+  hairline-strong: "rgba(236, 227, 208, 0.16)"
+  verdigris: "#5cc596"
+  verdigris-soft: "rgba(92, 197, 150, 0.12)"
+  amber: "#e8b04a"
+  amber-soft: "rgba(232, 176, 74, 0.12)"
+  vermilion: "#ef6a4f"
+  vermilion-soft: "rgba(239, 106, 79, 0.12)"
+  idle-moss: "#4f6359"
 typography:
-  display: "'Bricolage Grotesque Variable' (opsz axis), fallback Segoe UI Variable Display"
-  text: "'Hanken Grotesk Variable', fallback Segoe UI Variable Text"
-  base: "15px / 1.5"
-  scale:
-    h1: "2.1rem / 750 / -0.035em / lh 1.05 (1.75rem under 560px)"
-    title-input: "1.45rem / 650 / -0.02em (display)"
-    pf-num: "1.35rem / 680 / -0.02em (display, tabular)"
-    section-h2: "1.3rem / 720 / -0.025em (panel, dup, list heads)"
-    card-h2: "1.15-1.2rem (card, bulk, status)"
-    price: "1.08rem / 720 / -0.01em (display, tabular)"
-    h2: "1.05rem / 700 / -0.015em"
-    body: "1rem"
-    secondary: "0.86-0.92rem (hint, meta, buttons)"
-    label: "0.82rem / 650 / +0.01em, muted"
-    micro: "0.72-0.78rem / 600-750 (pill, tag, counts, dt)"
-radii:
-  lg: 18px
-  md: 14px
-  sm: 10px
-  media: 12px
-  pill: 999px
-  focus: 6px
-shadows:
-  light:
-    sm: "0 1px 0 rgba(60,45,25,.04), 0 1px 3px rgba(60,45,25,.06)"
-    md: "0 1px 0 rgba(60,45,25,.04), 0 10px 30px -14px rgba(60,45,25,.22)"
-    lg: "0 2px 4px rgba(60,45,25,.05), 0 24px 48px -18px rgba(60,45,25,.35)"
-  dark:
-    sm: "0 1px 2px rgba(0,0,0,.3)"
-    md: "0 1px 2px rgba(0,0,0,.3), 0 12px 32px -16px rgba(0,0,0,.6)"
-    lg: "0 2px 6px rgba(0,0,0,.35), 0 28px 56px -20px rgba(0,0,0,.75)"
-motion:
-  ease: "cubic-bezier(0.16, 1, 0.3, 1)"
-  t: "180ms var(--ease)"
-  rise: "280-360ms, translateY(14px) + fade"
-  pop: "320ms, scale 0.4 -> 1.15 -> 1"
-  pulse: "1-1.2s opacity loop (in-progress states)"
-  reduced: "prefers-reduced-motion kills all animation and transition"
-layout:
-  page: "max 780px; wide 1120px; padding 36px 24px 120px"
-  breakpoints: [980px, 760px, 560px]
+  display:
+    fontFamily: "Marcellus, 'Times New Roman', serif"
+    fontSize: "2rem"
+    fontWeight: 400
+    lineHeight: 1.1
+    letterSpacing: "0.01em"
+  nameplate:
+    fontFamily: "Marcellus, 'Times New Roman', serif"
+    fontSize: "1.6rem"
+    fontWeight: 400
+    lineHeight: 1.1
+    letterSpacing: "0.3em"
+  headline:
+    fontFamily: "Marcellus, 'Times New Roman', serif"
+    fontSize: "1.4rem"
+    fontWeight: 400
+    lineHeight: 1.2
+    letterSpacing: "0.02em"
+  title:
+    fontFamily: "'Albert Sans Variable', 'Segoe UI', system-ui, sans-serif"
+    fontSize: "1.02rem"
+    fontWeight: 650
+    lineHeight: 1.5
+  body:
+    fontFamily: "'Albert Sans Variable', 'Segoe UI', system-ui, sans-serif"
+    fontSize: "15px"
+    fontWeight: 400
+    lineHeight: 1.5
+    fontFeature: "tnum"
+  label:
+    fontFamily: "'Albert Sans Variable', 'Segoe UI', system-ui, sans-serif"
+    fontSize: "0.78rem"
+    fontWeight: 650
+    letterSpacing: "0.08em"
+  numeral:
+    fontFamily: "'Albert Sans Variable', 'Segoe UI', system-ui, sans-serif"
+    fontSize: "1.3rem"
+    fontWeight: 650
+    lineHeight: 1.2
+    fontFeature: "tnum"
+rounded:
+  tag: "4px"
+  sm: "8px"
+  md: "12px"
+  lg: "16px"
+spacing:
+  xs: "8px"
+  sm: "10px"
+  md: "14px"
+  lg: "22px"
+  page: "36px 24px 120px"
+components:
+  button-primary:
+    backgroundColor: "{colors.brass}"
+    textColor: "{colors.brass-ink}"
+    rounded: "{rounded.sm}"
+    padding: "10px 18px"
+  button-secondary:
+    backgroundColor: "transparent"
+    textColor: "{colors.ivory}"
+    rounded: "{rounded.sm}"
+    padding: "7px 13px"
+  button-secondary-hover:
+    backgroundColor: "{colors.brass-soft}"
+    textColor: "{colors.brass-hi}"
+  input:
+    backgroundColor: "{colors.velvet-well}"
+    textColor: "{colors.ivory}"
+    rounded: "{rounded.sm}"
+    padding: "10px 13px"
+  tray:
+    backgroundColor: "{colors.velvet-tray}"
+    rounded: "{rounded.lg}"
+    padding: "10px"
+  slot:
+    backgroundColor: "{colors.velvet-well}"
+    rounded: "{rounded.md}"
+    padding: "10px 14px 10px 8px"
+  thumb:
+    backgroundColor: "{colors.velvet-well-hi}"
+    rounded: "{rounded.sm}"
+    size: "72px"
+  tag:
+    textColor: "{colors.sage-muted}"
+    rounded: "{rounded.tag}"
+    padding: "2px 8px"
+  site-toggle:
+    backgroundColor: "{colors.velvet-well}"
+    rounded: "10px"
+    height: "50px"
 ---
 
-# Splisto: design system
+# Design System: Splisto
 
-**Market stall (banco del mercato).** Warm paper, ink, price-tag orange. A cross-listing dashboard for second-hand sellers (Vinted, eBay, Subito, Wallapop, Facebook Marketplace). Operate mode: dense, calm, task-first. Light and dark follow `prefers-color-scheme` automatically; there is no manual toggle.
+## Overview
 
-## Color
+**Creative North Star: "Vetrina di velluto"**
 
-- **Paper, not white.** Every neutral is warm (brown-tinted). Page `--bg` sits under a soft top radial of `--bg-grad`. Content lives on `--surface`. `--surface-2` is for hover and quiet fills, `--sunken` for wells (tags, empty thumbs, photo add).
-- **One accent: price-tag orange.** `--accent` fills (primary button, counts, photo cover badge, tick). Text on orange is always `--accent-text` (near-black), never white. Orange *text* uses `--accent-strong` for contrast. `--accent-soft` is the tint for selected or AI areas, and `--accent-line` is the border for them.
-- **Status triad plus idle:** `--ok`, `--warn`, `--err`, `--idle`. Each has a `-soft` background. A status is always a solid color on its own soft tint.
-- **Text tiers:** `--text`, `--muted` (labels, secondary), `--faint` (placeholders, timestamps, `dt`). `--faint` is 4.7:1 on `--surface` in both themes, so it is the floor. Nothing lighter carries text.
-- **Sold** inverts: `.state-sold` is `--text` on `--bg`.
+Every listing is an object seated in its own recess on a dark bottle-green velvet tray; the five marketplaces are brass tags along its rail. The ground has nap: a fine, directional noise texture drawn once as an SVG and laid over the html ground, the body, every tray and every well. Depth is physical: trays rise on soft downward shadows, wells and fields sink with a dark top edge.
 
-## Type
+One dark theme only (`color-scheme: dark`). Density is an operator's: long listing slots at one photo scale, state read at a glance in fixed cells, Italian copy throughout. The system refuses the category default of near-black SaaS panels, one neon accent and glowing card edges.
 
-- **Bricolage Grotesque** (variable, optical size on) for headings, numbers, prices, the listing-title input, legends and alert titles. **Hanken Grotesk** for everything else. Both are bundled via `@fontsource-variable`, with no network fetch.
-- Headings use tight negative tracking, bigger gets tighter (-0.035em at h1), plus `text-wrap: balance`.
-- Every number a seller compares (prices, counts, views/likes, fees) uses `font-variant-numeric: tabular-nums`.
-- Weights are variable in-between values (650, 680, 720, 750). Use them, don't round to 600/700.
+**Key Characteristics:**
+- Velvet ground, tray and well tones, all carrying the nap texture.
+- Brass is solid (metal fill) only on what can be pressed; everywhere else it is engraved: brass outline, brass text.
+- Ivory text in three tiers; the faintest still clears 4.5:1 on velvet.
+- Site state is a mark in a fixed cell, never a free-floating badge.
+- Engraved roman headings (Marcellus), one workhorse sans (Albert Sans) for every control and number.
 
-## Shape and depth
+## Colors
 
-- Radii: 18 for containers (panel, sheet, card, dock, bulk, photos), 14 for rows and status rows, 10 for fields, 12 for images and pf-toggles, 999 for every button, pill, tag and chip.
-- Shadows are warm brown in light, pure black in dark. `sm` for resting cards and rows, `md` for panels and row hover, `lg` only for floating sticky bars.
-- Hairline dividers are `1px solid var(--border)`. Dashed `1.5px var(--border-strong)` means empty or drop target (empty list, empty photo well).
+Bottle-green velvet, aged brass, bone ivory, and three mineral status hues.
+
+### Primary
+- **Brass** (brass): engraved outlines on focus, selection, checked toggles, icons inside secondary buttons, the caret and select chevron.
+- **Polished Brass** (brass-hi): prices, nameplate lettering, hover text, focus ring (2px, offset 2px).
+- **Brass Metal**: two-stop gradient (`#dcbc78` to `#b9934d`, see sidecar) used only on the primary button and the checked-toggle tick; text on it is Brass Ink.
+- **Brass Line / Brass Soft**: hairline rule of every tray and the nameplate; soft wash behind hovered secondary and text buttons.
+
+### Secondary (status)
+- **Verdigris** (verdigris): published / connected / filled.
+- **Amber** (amber): incomplete or login needed; the half mark, warning tags.
+- **Vermilion** (vermilion): error, disconnected, destructive hover; alert band wash.
+- **Idle Moss** (idle-moss): hollow and removed marks.
+
+### Neutral
+- **Velvet Ground / Ground Hi**: page ground, with a radial light from above (Ground Hi) on the body.
+- **Velvet Tray**: raised panels, cards, sheets, the listing tray, docks.
+- **Velvet Well / Well Hi**: recesses: inputs, slots, site cells, icon buttons, thumbnail backing.
+- **Ivory / Sage Muted / Sage Faint**: text tiers: content, secondary, metadata and placeholders.
+- **Hairline / Hairline Strong**: dividers and field strokes.
+
+### Named Rules
+**The Pressable Brass Rule.** Solid brass metal appears only on an element that can be pressed (primary button, checked-toggle tick). Anything informational uses engraved brass: a brass outline or brass text on velvet.
+
+**The Faint Floor Rule.** The faintest text tier (sage-faint) must keep at least 4.5:1 on the velvet ground and wells; never introduce a dimmer text tone.
+
+## Typography
+
+**Display Font:** Marcellus (with Times New Roman, serif)
+**Body Font:** Albert Sans Variable (with Segoe UI, system-ui, sans-serif)
+
+**Character:** An engraved Roman capital voice for names and headings, over a clean grotesque that does all the work. Numerals are tabular everywhere (set on `:root`).
+
+### Hierarchy
+- **Display** (400, 2rem, 1.1; 2.2rem on the settings page): page titles.
+- **Nameplate** (400, 1.6rem, 0.3em tracking, uppercase, Polished Brass): SPLISTO lettering over a hairline brass rule; 1.15rem / 0.24em at 560px and below.
+- **Headline** (400, 1.15 to 1.4rem, 0.02em): panel, tray, card and status headings; alert titles, empty-state titles, summary and legend lines also take Marcellus.
+- **Title input** (Marcellus, 1.5rem; 1.25rem on mobile): the listing title field is set in the display face.
+- **Title** (Albert Sans 650, 1.02rem): listing names in slots, ellipsized on one line.
+- **Body** (400, 15px root, 1.5): all UI copy; hints 0.83 to 0.88rem in Sage Muted.
+- **Label** (650, 0.78rem, 0.08em, uppercase): form field labels; status pills and count captions use the same uppercase tracking at 0.68 to 0.7rem.
+- **Numeral** (650, 1.3rem, tabular): site counts in the rail.
+
+### Named Rules
+**The Explicit Body Rule.** Set the body font family and size on `body` itself, not only on `:root`: Chrome injects `body { font-family: system-ui; font-size: 75% }` on extension pages.
+
+**The Two Voices Rule.** Marcellus is for names and headings (plus the title field); every control, label and number is Albert Sans.
+
+## Layout
+
+Single centered column: 800px max for editor and settings, 1140px for the home (`.page.wide`), padding 36px 24px 120px (20px 16px 104px at 560px and below). Trays pad 10px with 10px gaps between slots; panel heads 18px 22px.
+
+The listing tray is a CSS grid (`auto minmax(0,1fr) auto auto`) whose rows are subgrids, so each slot's checkbox, photo/text, five state cells and actions align in shared columns across the tray; the five state cells are a fixed 5 x 54px grid, always in the same site order. At 760px and below the tray falls back to flex and the cells and actions wrap under the photo; at 560px the cells stretch to five equal columns and per-site counts hide.
+
+The site rail is five equal columns, auto-fit at 980px, one column at 560px. The editor's "Pubblica su" dock is sticky at bottom 14px; at 560px and below it becomes static and its two buttons share one row (a lone button spans both). Breakpoints: 980, 760, 560px.
+
+## Elevation & Depth
+
+Hybrid: tonal layering plus directional shadows. Light comes from above; shadows fall down, recesses have a dark top edge. Trays lift, wells sink, and the photo is the only thing that leaves its recess.
+
+### Shadow Vocabulary
+- **Recess** (`inset 0 2px 5px rgba(0,0,0,.55), inset 0 -1px 0 rgba(236,227,208,.04)`): wells, inputs, slots, site cells, toggles, icon buttons.
+- **Lift** (`0 1px 0 rgba(236,227,208,.05) inset, 0 10px 24px -12px rgba(0,0,0,.7)`): trays, panels, cards, sheets.
+- **Lift Large** (`0 1px 0 rgba(236,227,208,.06) inset, 0 24px 48px -18px rgba(0,0,0,.85)`): the sticky bulk bar and publish dock.
+- **Seated Photo** (`0 2px 4px rgba(0,0,0,.5)`), lifting to `0 12px 18px -6px rgba(0,0,0,.85)` plus a brass hairline ring.
+
+### Named Rules
+**The Nap Everywhere Rule.** Any new velvet surface (ground, tray, well) layers `var(--nap)` over its tone; a flat green fill reads as plastic.
+
+**The Down-Light Rule.** Shadows only fall downward; no glows, no colored halos except the 3px brass focus wash on fields and the verdigris halo on the published mark.
+
+## Shapes
+
+Softly rounded rectangles in three steps: trays 16px, slots and cells 12px, buttons and fields 8px; photo tiles and site toggles 10px; tags, pills and badges a near-square 4px. Borders are 1px hairlines; brass at 0.28 alpha on trays, full brass on selection and on the sticky bars. State marks are 10px circles.
 
 ## Components
 
-- **Buttons:** `.btn-primary` is an orange pill with an inset top highlight and orange glow, press is `translateY(1px) scale(.99)`. `.btn-secondary` is a surface pill with a strong border that hovers to an orange border and `--accent-strong` text (`.small`). `.btn-text` is inline and muted, hovering to an accent-soft bg (`.accent`, `.danger`, `.danger-strong`). `.icon-btn` is a 42/32px circle (`.ghost`, `.danger`).
-- **Fields:** `--field` background, strong border, radius sm. Focus gives an accent border plus a 4px `--accent-soft` ring (no outline). Labels are 0.82rem/650 muted above the control (`.field`, `.field-head`). Custom chevron on `select`. Checkboxes use `accent-color`.
-- **Status vocabulary (one mapping everywhere):** idle = idle, opening = accent + pulse, filled/published = ok, incomplete/login = warn, error = err, removed = idle.
-  - `.dot`: 8px circle, standalone or pinned on a chip.
-  - `.state`: a pill with label for the per-site status in the editor.
-  - `.pill`: account auth (on/off/unknown/checking) with a built-in `::before` dot, and checking pulses.
-  - `.tag`: neutral sunken label (`-warn`, `-danger`, `-accent`) for row meta.
-  - `.chip`: per-site logo mark plus dot plus `.stat-pair` (lucide Eye/Heart, en dash when unread).
-- **pf-toggle:** a platform checkbox drawn as a 52px tile (`.compact` 42px). The real input is visually hidden. Unchecked is a greyscale logo at 0.4. Checked gets an accent border plus a 1px accent ring plus an orange glow and a `.pf-tick` badge that pops in. Under 560px the wordmark is swapped for the square mark.
-- **Sticky bars:** `.dock` (editor, "Pubblica su") and `.bulk` (multi-select edit) stick at `bottom: 14px` (8px on mobile), radius lg, shadow lg. Dock is translucent surface with `backdrop-filter: blur(14px)`. Bulk has an accent-line border, rises in, and scrolls internally (`max-height: min(50vh, 540px)`).
-- **Rows:** a surface card, 72px thumb (60 on mobile), title ellipsized. A picked row gets an accent border plus ring plus a 4% orange wash. A sold row is greyscale thumb, muted title and struck price.
-- **Platform logos:** official SVGs in `public/logos` via `<Logo p mark?>`. Wordmark (`.logo-word`, per-brand height tuning) or square mark (`.logo-mark`, 18px). Dark variants through `<picture>` where the brand color fails on dark (Vinted). Facebook pairs its mark with a display-face "Marketplace".
-- **Icons:** lucide-react only, 13-16px inline, `aria-hidden` when decorative.
+### Buttons
+- **Primary:** brass metal fill, Brass Ink text 700, 8px radius, 10px 18px (12px 22px in the dock), inset highlight top and shadow below; hover brightens 8%, active presses 1px down; disabled at 35% opacity, desaturated.
+- **Secondary:** transparent, brass-line outline, ivory 600 text at 0.88rem, brass icon; hover gets full brass border, brass-soft wash, Polished Brass text.
+- **Text:** Sage Muted, no chrome; hover ivory on brass-soft. Accent variant in Polished Brass; danger turns vermilion.
+- **Icon button:** 40px (30px small) recessed well with hairline stroke; ghost variant has no chrome.
 
-## Motion
+### Status marks
+Fixed-size 10px marks: **published** filled verdigris with a soft verdigris halo; **filled** verdigris ring with a centre dot; **incomplete / login** amber ring, left half filled; **error** vermilion ring struck through at -45deg; **idle** hollow moss ring; **removed** moss ring with a horizontal dash; **opening** solid brass pulsing (1.2s). Marks are `aria-hidden`; the cell's title or the adjacent state pill carries the words.
 
-One curve (`--ease`, expo-out) and one duration (`--t` 180ms) for all state transitions. Entrances use `rise`, confirmations use `pop`, in-progress states use `pulse`, and loading uses `spin`. `prefers-reduced-motion: reduce` disables every animation and transition. Hover-only reveals (photo remove, pf-cell actions) are forced visible under `hover: none`.
+### Pills and tags
+Engraved, never filled: 4px radius, 1px currentColor or tinted outline, uppercase 0.7rem tracked text for state pills (with a leading 7px dot); tags are 0.74rem sentence case with a soft tinted wash for warn, danger and accent.
 
-## Accessibility
+### Trays and slots
+Tray: nap over Velvet Tray, brass-line border, 16px radius, Lift. Slot: nap over Velvet Well, 12px radius, Recess, transparent border that turns brass-line on hover and solid brass (plus 1px ring) when picked. Sold slots grey the photo and strike the price.
 
-- Global `:focus-visible` is a 2px `--accent` outline with a 2px offset and radius 6. Visually hidden inputs pass it to the wrapper via `:has(input:focus-visible)` (pf-toggle, photo-add).
-- `.sr-only` for labels without visible text. Decorative dots and icons use `aria-hidden`, and state is always spelled out in text beside the color.
-- Color is never the only signal: pills, states and site-ops carry text or `aria-label`.
-- `color-scheme: light dark` so native controls and scrollbars follow the theme. Caret and selection are orange.
+### Inputs / Fields
+Recessed wells with Hairline Strong stroke, 8px radius, 10px 13px; hover brass-line; focus solid brass border plus a 3px brass wash, no outline. Placeholders in Sage Faint. Selects carry a brass chevron. Checkboxes take `accent-color: brass`.
 
-## Not canonized (defects the build carries)
+### Site toggles
+50px recessed wells holding the site's dark-ground logo, greyed at 35% when off; checked gets brass border and ring, full-color logo, and a brass-metal tick badge that pops in (320ms). Logos always come from the dark-ground variants in `public/logos`; at 560px wordmarks swap to marks.
 
-- `.site-op` in BulkBar draws its add/remove/keep state with text glyphs (`+`, `−`, `·`). Future surfaces use lucide icons (Plus, Minus) instead.
-- The orange glows (`.btn-primary`, `.pf-toggle:checked`, `.brand img`) hard-code `rgba(255, 90, 31, …)` rather than a token, so dark mode keeps the light accent hue. A `--accent-glow` token would fix this.
-- `.title-input` relies on `!important` to beat the global field rule.
+### Signature: the lifting photo
+The 72px thumbnail (60px on mobile) sits in its recess; on hover or keyboard focus of the slot link it rises 3px over 220ms (ease-out `cubic-bezier(0.16,1,0.3,1)`), its shadow deepening and a brass hairline ring appearing.
+
+### App icon
+`public/icons/icon.svg`: a tilted brass tag with a ring hole on a bottle-green velvet tile with a faint brass border; PNGs are rendered from it.
+
+## Do's and Don'ts
+
+### Do:
+- **Do** layer the nap texture on every velvet surface and keep wells darker than the ground.
+- **Do** reserve brass metal for pressables; use brass outlines and brass text everywhere else.
+- **Do** show site state as a mark in its fixed cell, in fixed site order, with the words in a title or pill.
+- **Do** keep every photo at one scale and on the same well ground.
+- **Do** honor reduced motion: transitions and animations collapse to 1ms and the photo stops lifting, but color and border state changes stay visible.
+
+### Don't:
+- **Don't** add a light theme or any surface outside the velvet tones.
+- **Don't** fill informational elements (pills, tags, headings, badges) with solid brass.
+- **Don't** add glows, neon accents or glowing card edges.
+- **Don't** use light-ground logo variants.
+- **Don't** set UI controls or numbers in Marcellus, or let body text fall back to the extension's system-ui default.

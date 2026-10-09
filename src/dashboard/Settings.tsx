@@ -1,4 +1,4 @@
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, ExternalLink, Sparkles } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { testAi } from '../lib/ai'
 import { exportAll, importAll } from '../lib/db'
@@ -124,7 +124,9 @@ export function Settings() {
       <h1>Impostazioni</h1>
 
       <section className="card">
-        <h2>Intelligenza artificiale (funzioni ✨)</h2>
+        <h2 className="with-icon">
+          Intelligenza artificiale (funzioni <Sparkles size={16} aria-label="AI" />)
+        </h2>
         <p className="hint">
           Scegli il servizio che scrive titoli e descrizioni e guarda le foto. Testo e foto dell’annuncio vanno solo al servizio scelto;
           la chiave resta in questo browser, in un archivio separato dagli annunci (mai nei backup).
@@ -143,7 +145,7 @@ export function Settings() {
           {prov.note}{' '}
           {prov.keyUrl && (
             <a className="btn-text" href={prov.keyUrl} target="_blank" rel="noreferrer">
-              Crea la chiave ↗
+              Crea la chiave <ExternalLink size={13} aria-hidden="true" />
             </a>
           )}
         </p>

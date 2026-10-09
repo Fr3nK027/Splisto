@@ -316,5 +316,7 @@ src/dashboard/                interfaccia React (lista, editor, foto, stato, imp
 src/lib/db.ts                 IndexedDB (idb), backup
 src/lib/ai.ts                 chiamate all'API Anthropic
 src/lib/platforms.ts          limiti titolo, categorie e mappatura di default
-public/logos/                 loghi dei siti (presi dai siti, 10/2026); *-mark = icona piccola, *-dark = tema scuro
+public/logos/                 loghi dei siti (presi dai siti, 10/2026); *-mark = icona piccola, *-dark = variante per fondo scuro (la dashboard è sempre scura)
+public/icons/icon.svg         icona dell'estensione; le PNG 16/32/48/128 sono generate da questo file
+DESIGN.md, PRODUCT.md         sistema visivo ("vetrina di velluto") e scheda prodotto, usati da Impeccable
 ```
