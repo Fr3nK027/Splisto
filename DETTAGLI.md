@@ -172,8 +172,13 @@ altrove" per gli annunci online su un solo sito.
 | eBay | `ebay.com/mys/active` (My eBay su ebay.com) | verificato 10/2026: titolo, prezzo, visualizzazioni, osservatori, foto; descrizione da `itm.ebaydesc.com` |
 | Wallapop | `app/catalog/published` | verificato 10/2026 (titolo, prezzo, foto; descrizione, visite e preferiti dalla pagina dell'annuncio) |
 
-Le foto vengono scaricate dai server delle immagini dei siti (permessi in `manifest.json`) e ridimensionate
-come quelle caricate a mano.
+Le foto vengono scaricate dai server delle immagini dei siti (permessi in `manifest.json`), nella versione più
+grande che il sito dà (`bigPhoto` in `src/content/text.ts`; Vinted: l'originale dai dati della pagina), e
+ridimensionate come quelle caricate a mano (lato lungo 2048 px).
+
+Le importazioni prima della 1.3.1 salvavano anteprime piccole (450×800, a volte 128×96), poi ripubblicate sugli
+altri siti: per questo risultavano sgranate. Nell'editor queste foto hanno il segno **Piccola**;
+**Riscarica foto dal sito** (nell'editor, o nella barra di modifica multipla) le sostituisce con quelle grandi.
 
 ## Pubblicare e aggiornare insieme
 
@@ -202,7 +207,10 @@ L'avviso sparisce quando salvi sul sito, oppure alla prossima importazione se i 
 
 - **Venduto su un sito:** se all'importazione Vinted o Facebook mostrano l'articolo come venduto, l'annuncio viene
   segnato venduto. Arriva una notifica con i siti dove va tolto, e in lista compaiono "Venduto: togli da …" e il
-  pulsante **Togli dagli altri siti**, che apre gli annunci da eliminare.
+  pulsante **Togli dagli altri siti**: su Vinted elimina l'annuncio da solo, sugli altri siti lo apre e lo elimini tu.
+- **Eliminare in Splisto** un annuncio online lo toglie anche dai siti, allo stesso modo. Se un sito non riesce,
+  l'annuncio resta in Splisto con l'errore nel pannello Stato. L'eliminazione automatica c'è solo dove il percorso
+  è verificato (`remove` nel file del sito: per ora Vinted).
 - **Sparito da un sito:** se un annuncio pubblicato non compare tra i tuoi annunci attivi per 2 importazioni
   complete di fila, compare "Sparito da …: venduto o tolto?". Nel pannello Stato scegli "Venduto qui", "Tolto dal
   sito" o "È ancora online". Un annuncio "Tolto dal sito" si può rimettere online con **Ripubblica**.
@@ -272,6 +280,7 @@ I siti cambiano spesso la pagina. Quando succede, lo stato diventa *Errore* ("Mo
 | `published` | URL della pagina annuncio / conferma, per salvare il link da solo |
 | `stats` | dove leggere visualizzazioni e like (selettori o testo/aria-label della pagina) |
 | `uploadPhotos` | (Subito, Facebook) caricamento automatico delle foto |
+| `remove` | pulsanti da premere sulla pagina del tuo annuncio per eliminarlo (l'ultimo è la conferma) |
 
 Ogni voce di `fields` è:
 - una stringa = selettore CSS, ad esempio `'input[name="title"]'` o `'[data-testid="title--input"]'`;
