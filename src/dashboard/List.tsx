@@ -5,6 +5,7 @@ import { editUrlFor, SITE_URL } from '../content/text'
 import { bulkPatch } from '../lib/bulk'
 import { allListings, deleteListing, duplicateListing, getListing, newListing, saveFields, saveListing } from '../lib/db'
 import { outOfSync, PLATFORM_LABEL, publishedOn, STALE_DAYS } from '../lib/platforms'
+import { checkUpdate, type Release } from '../lib/update'
 import { PLATFORMS, type AuthState, type LastImport, type Listing, type Msg, type Platform } from '../lib/types'
 import { BulkBar } from './BulkBar'
 import { ago, Dot, fmt, Logo, STATE_LABEL, StatPair, Thumb, useAuth, useLastImport, useStatusChanged } from './ui'
@@ -338,6 +339,8 @@ export function List() {
   const [q, setQ] = useState('')
   const [note, setNote] = useState('')
   const [picked, setPicked] = useState<Set<string>>(new Set())
+  const [update, setUpdate] = useState<Release | null>(null)
+  useEffect(() => void checkUpdate().then(setUpdate, () => {}), []) // senza rete: nessun avviso
   const reload = useCallback(() => void allListings().then(setItems), [])
   useEffect(reload, [reload])
   useStatusChanged(reload)
@@ -415,6 +418,11 @@ export function List() {
           <span className="brand-sub">Scrivi una volta, vendi ovunque</span>
         </div>
         <div className="bar-actions">
+          {update && (
+            <a className="btn-text accent" href="#/settings">
+              Aggiorna a {update.version}
+            </a>
+          )}
           <a className="icon-btn" href="#/settings" title="Impostazioni" aria-label="Impostazioni">
             <SettingsIcon size={19} aria-hidden="true" />
           </a>

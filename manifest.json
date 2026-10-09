@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Splisto",
   "short_name": "Splisto",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Scrivi l'annuncio una volta, compilalo su Vinted, eBay, Subito, Facebook Marketplace e Wallapop.",
   "icons": {
     "16": "icons/icon-16.png",
@@ -42,7 +42,8 @@
     "https://images.sbito.it/*",
     "https://*.fbcdn.net/*",
     "https://*.ebayimg.com/*",
-    "https://itm.ebaydesc.com/*"
+    "https://itm.ebaydesc.com/*",
+    "https://*.githubusercontent.com/*"
   ],
   "optional_host_permissions": [
     "https://*/*",

@@ -29,6 +29,9 @@ npm run e2e        # dopo la build: prova vera in Edge con profilo pulito (BROWS
 
 ## Caricare l'estensione
 
+Senza compilare: scarica `splisto.zip` dall'[ultima release](https://github.com/Fr3nK027/Splisto/releases/latest),
+estrailo in una cartella che non sposterai più e caricala come qui sotto al posto di `dist`.
+
 **Chrome**
 1. Apri `chrome://extensions`.
 2. Attiva **Modalità sviluppatore** (in alto a destra).
@@ -44,6 +47,19 @@ Dopo `npm run build` l'estensione si accorge da sola della nuova versione (confr
 quello su disco) e si ricarica all'apertura della dashboard o al riavvio del service worker. I file della build
 hanno nomi fissi (`vite.config.ts`), così anche prima della ricarica le schede aperte dall'estensione trovano il
 loro codice.
+
+## Aggiornare dalla dashboard
+
+Quando esce una versione nuova, in alto nella dashboard compare **Aggiorna a x.y.z** (porta in Impostazioni →
+Aggiornamenti). La prima volta il browser chiede la cartella da cui è caricata Splisto (in `chrome://extensions`,
+voce "Caricata da"): Splisto controlla che sia proprio quella (stesso `manifest.json`), ci scrive i file nuovi e si
+ricarica da sola. Le volte dopo basta confermare il permesso.
+
+Come funziona: a ogni push su `main` con una versione nuova nel manifest, la CI crea la release `vX.Y.Z` con
+`splisto.zip` (per l'installazione a mano) e `splisto.json` (tutti i file della build, per l'aggiornamento;
+`scripts/bundle.mjs`). Per pubblicare una versione basta alzare `version` in `manifest.json` e `package.json`.
+L'aggiornamento non parte mentre ci sono compilazioni o controlli in corso. Il controllo è una sola richiesta a
+GitHub all'apertura della dashboard: nessun controllo in background.
 
 ## Servizio AI (per le funzioni ✨)
 
@@ -316,6 +332,8 @@ src/dashboard/                interfaccia React (lista, editor, foto, stato, imp
 src/lib/db.ts                 IndexedDB (idb), backup
 src/lib/ai.ts                 chiamate all'API Anthropic
 src/lib/platforms.ts          limiti titolo, categorie e mappatura di default
+src/lib/update.ts             aggiornamento dalla dashboard (release GitHub → cartella dell'estensione)
+scripts/bundle.mjs            crea splisto.json per le release (usato dalla CI)
 public/logos/                 loghi dei siti (presi dai siti, 10/2026); *-mark = icona piccola, *-dark = variante per fondo scuro (la dashboard è sempre scura)
 public/icons/icon.svg         icona dell'estensione; le PNG 16/32/48/128 sono generate da questo file
 DESIGN.md, PRODUCT.md         sistema visivo ("vetrina di velluto") e scheda prodotto, usati da Impeccable

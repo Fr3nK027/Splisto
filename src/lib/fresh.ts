@@ -16,12 +16,15 @@ async function stale(): Promise<boolean> {
   }
 }
 
+/** Compilazioni, controlli o importazioni in corso: una ricarica li interromperebbe (azzera job e code). */
+export async function busy(): Promise<boolean> {
+  return Object.keys(await chrome.storage.session.get(null)).some((k) => k.startsWith('job:'))
+}
+
 /** Ricarica l'estensione se su disco c'è una build diversa. `reopen` = riapri la dashboard dopo. true = sta ricaricando. */
 export async function reloadIfStale(reopen: boolean): Promise<boolean> {
   if (!(await stale())) return false
-  // la ricarica azzera job e code: aspetta che compilazioni, controlli e importazioni siano finiti
-  const session = await chrome.storage.session.get(null)
-  if (Object.keys(session).some((k) => k.startsWith('job:'))) return false
+  if (await busy()) return false
   const { reloadedAt = 0 } = await chrome.storage.local.get('reloadedAt')
   if (Date.now() - (reloadedAt as number) < 120_000) return false
   await chrome.storage.local.set({ reloadedAt: Date.now(), ...(reopen && { afterReload: 'open' }) })

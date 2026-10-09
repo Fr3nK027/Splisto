@@ -1,6 +1,7 @@
 import { ArrowLeft, ExternalLink, Sparkles } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { testAi } from '../lib/ai'
+import { checkUpdate, current, installUpdate, type Release } from '../lib/update'
 import { exportAll, importAll } from '../lib/db'
 import { PLATFORM_LABEL } from '../lib/platforms'
 import { MODEL_RE, originPattern, PROVIDER_IDS, PROVIDERS, resolveAi, validBaseUrl, type ProviderId } from '../lib/providers'
@@ -317,8 +318,69 @@ export function Settings() {
         </div>
       </section>
 
+      <Updates />
+
       {err && <p className="error-text">{err}</p>}
       {!err && msg && <p className="hint">{msg}</p>}
     </>
+  )
+}
+
+function Updates() {
+  const [rel, setRel] = useState<Release | null>()
+  const [note, setNote] = useState('')
+  const [working, setWorking] = useState(false)
+
+  const check = (force = false) => {
+    setNote('')
+    checkUpdate(force).then(setRel, (e: Error) => setNote(`Controllo non riuscito: ${e.message}`))
+  }
+  useEffect(() => check(), [])
+
+  async function install(r: Release) {
+    setWorking(true)
+    try {
+      await installUpdate(r, setNote) // se va a buon fine l'estensione si ricarica e la dashboard si riapre
+    } catch (e) {
+      setNote((e as Error).name === 'AbortError' ? 'Nessuna cartella scelta.' : `Aggiornamento non riuscito: ${(e as Error).message}`)
+      setWorking(false)
+    }
+  }
+
+  return (
+    <section className="card">
+      <h2>Aggiornamenti</h2>
+      <p className="hint">
+        Versione installata: {current()}.{' '}
+        {rel === undefined && !note && 'Controllo…'}
+        {rel === null && 'È l’ultima.'}
+        {rel && (
+          <>
+            Disponibile la {rel.version}.{' '}
+            <a className="btn-text" href={rel.page} target="_blank" rel="noreferrer">
+              Novità <ExternalLink size={13} aria-hidden="true" />
+            </a>
+          </>
+        )}
+      </p>
+      {rel && (
+        <p className="hint spaced">
+          La prima volta il browser ti chiede la cartella da cui hai caricato Splisto (in chrome://extensions, sotto Splisto, alla voce
+          “Caricata da”): sceglila e consenti la modifica. Poi l’estensione si ricarica da sola con la versione nuova.
+        </p>
+      )}
+      <div className="inline-form">
+        {rel ? (
+          <button className="btn-text accent" disabled={working} onClick={() => void install(rel)}>
+            Aggiorna a {rel.version}
+          </button>
+        ) : (
+          <button className="btn-text" disabled={rel === undefined && !note} onClick={() => check(true)}>
+            Controlla di nuovo
+          </button>
+        )}
+      </div>
+      {note && <p className="hint spaced">{note}</p>}
+    </section>
   )
 }
