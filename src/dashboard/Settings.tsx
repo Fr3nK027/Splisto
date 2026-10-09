@@ -207,10 +207,10 @@ export function Settings() {
       <section className="card">
         <h2>Controllo accessi e importazione</h2>
         <p className="hint">
-          L’estensione apre per pochi secondi, in background, una pagina di ogni sito e guarda se sei ancora loggato. Se
-          sei stato disconnesso ricevi una notifica di Windows e sull’icona compare il numero di siti da sistemare. Subito dopo legge
-          la pagina dei tuoi annunci su ogni sito e importa quelli nuovi (per esempio messi dal telefono), con foto, descrizione e
-          statistiche.
+          Se lo accendi, ogni tanto l’estensione apre per pochi secondi, in background, una pagina di ogni sito e guarda se sei
+          ancora loggato. Se sei stato disconnesso ricevi una notifica di Windows e sull’icona compare il numero di siti da sistemare.
+          Subito dopo legge la pagina dei tuoi annunci su ogni sito e importa quelli nuovi (per esempio messi dal telefono), con foto,
+          descrizione e statistiche. Spento, l’estensione non fa nulla finché non premi un pulsante.
         </p>
         <label className="check">
           <span className="hint">Controlla</span>
