@@ -1,5 +1,5 @@
 import { ImagePlus, X } from 'lucide-react'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { resizeImage } from '../lib/image'
 import { Thumb } from './ui'
 
@@ -9,6 +9,7 @@ export function Photos({ photos, onChange }: { photos: Blob[]; onChange: (p: Blo
   const [busy, setBusy] = useState(false)
   const [dragFrom, setDragFrom] = useState<number | null>(null)
   const [over, setOver] = useState(false)
+  const grid = useRef<HTMLDivElement>(null)
 
   async function add(files: FileList | File[]) {
     const imgs = [...files].filter((f) => f.type.startsWith('image/')).slice(0, MAX - photos.length)
@@ -25,6 +26,15 @@ export function Photos({ photos, onChange }: { photos: Blob[]; onChange: (p: Blo
     const next = [...photos]
     next.splice(to, 0, next.splice(from, 1)[0])
     onChange(next)
+  }
+
+  /** Da tastiera: frecce sinistra/destra spostano la foto con il fuoco, che la segue nella nuova posizione. */
+  function onKey(e: React.KeyboardEvent, i: number) {
+    const to = e.key === 'ArrowLeft' ? i - 1 : e.key === 'ArrowRight' ? i + 1 : -1
+    if (to < 0 || to >= photos.length) return
+    e.preventDefault()
+    move(i, to)
+    requestAnimationFrame(() => (grid.current?.children[to] as HTMLElement | undefined)?.focus())
   }
 
   const isFiles = (e: React.DragEvent) => e.dataTransfer.types.includes('Files')
@@ -45,12 +55,15 @@ export function Photos({ photos, onChange }: { photos: Blob[]; onChange: (p: Blo
         void add(e.dataTransfer.files)
       }}
     >
-      <div className="photo-grid">
+      <div className="photo-grid" ref={grid}>
         {photos.map((p, i) => (
           <figure
             key={i}
             className={`photo ${dragFrom === i ? 'dragging' : ''}`}
             draggable
+            tabIndex={0}
+            aria-label={`Foto ${i + 1} di ${photos.length}${i === 0 ? ', copertina' : ''}. Frecce sinistra e destra per spostarla`}
+            onKeyDown={(e) => onKey(e, i)}
             onDragStart={() => setDragFrom(i)}
             onDragEnd={() => setDragFrom(null)}
             onDragOver={(e) => dragFrom !== null && e.preventDefault()}
@@ -91,7 +104,7 @@ export function Photos({ photos, onChange }: { photos: Blob[]; onChange: (p: Blo
         )}
       </div>
       <p className="hint">
-        {photos.length}/{MAX} · trascina per riordinare · ridimensionate in locale a 1600 px
+        {photos.length}/{MAX} · trascina (o frecce ← →) per riordinare · ridimensionate in locale a 1600 px
       </p>
     </section>
   )
