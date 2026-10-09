@@ -801,7 +801,8 @@ async function handle(msg: Msg, sender: chrome.runtime.MessageSender): Promise<u
       const l = await getListing(msg.listingId)
       const online = (x?: Platform): x is Platform => !!l && !!x && l.status[x]?.state === 'published' && SITE_URL.test(l.status[x]?.url ?? '')
       const p = [l?.importedFrom, ...PLATFORMS].find(online)
-      if (!l || !p) return false
+      // solo annunci importati: le foto caricate da te sono già migliori di quelle ricompresse dal sito
+      if (!l?.importedFrom || !p) return false
       await enqueueStats([{ listingId: l.id, platform: p, url: l.status[p]!.url, kind: 'detail', replacePhotos: true }])
       return PLATFORM_LABEL[p]
     }

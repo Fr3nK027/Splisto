@@ -1,4 +1,4 @@
-import { Check, Dot, Minus, Plus, RotateCcw, Send, Trash2, Undo2, X } from 'lucide-react'
+import { Check, Dot, ImageDown, Minus, Plus, RotateCcw, Send, Trash2, Undo2, X } from 'lucide-react'
 import { useState } from 'react'
 import { bulkPatch, snapshot, type BulkOps, type TextMode } from '../lib/bulk'
 import { deleteListing, getListing, saveFields } from '../lib/db'
@@ -120,6 +120,13 @@ export function BulkBar({ ids, anyOnline, onlineOn, onChanged, onClear, onNote }
     setMsg('Modifiche annullate.')
     setBusy(false)
     onChanged()
+  }
+
+  async function refetchPhotos() {
+    if (!confirm(`Sostituire le foto degli annunci importati con quelle dei siti, in alta qualità?`)) return
+    let n = 0
+    for (const id of ids) if (typeof (await chrome.runtime.sendMessage({ type: 'refetchPhotos', listingId: id } satisfies Msg)) === 'string') n++
+    setMsg(n ? `Scarico dai siti le foto di ${n} ${n === 1 ? 'annuncio' : 'annunci'}, due alla volta: compaiono man mano.` : 'Nessun annuncio importato e online tra quelli scelti.')
   }
 
   async function remove() {
@@ -296,6 +303,11 @@ export function BulkBar({ ids, anyOnline, onlineOn, onChanged, onClear, onNote }
           {undo && (
             <button className="btn-secondary" onClick={revert} disabled={busy}>
               <Undo2 size={16} aria-hidden="true" /> Annulla modifiche
+            </button>
+          )}
+          {anyOnline && (
+            <button className="btn-text" onClick={refetchPhotos} disabled={busy} title="Solo annunci importati: foto del sito nella versione più grande">
+              <ImageDown size={15} aria-hidden="true" /> Riscarica foto
             </button>
           )}
           <button className="btn-text danger" onClick={remove} disabled={busy}>
