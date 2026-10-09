@@ -130,25 +130,13 @@ export function Editor({ id }: { id: string }) {
 
   const aiBox = (field: AiField) => {
     if (ai?.field !== field || ai.loading) return null
-    if (ai.error)
-      return (
-        <div className="ai-preview" role="status">
+    // cosa si mostra e cosa fa "Usa" (null = solo "Chiudi": errore o consigli sulle foto)
+    const apply = ai.error || field === 'photos' ? null : field === 'titles' ? { titleOverride: { ...l.titleOverride, ...ai.titles } } : { [field]: ai.text! }
+    return (
+      <div className="ai-preview" role="status">
+        {ai.error ? (
           <p className="error-text">{ai.error}</p>
-          <div className="ai-actions">
-            {ai.error.includes('Impostazioni') && (
-              <a className="btn-text" href="#/settings">
-                Apri Impostazioni
-              </a>
-            )}
-            <button className="btn-text" onClick={close}>
-              Chiudi
-            </button>
-          </div>
-        </div>
-      )
-    if (field === 'titles')
-      return (
-        <div className="ai-preview" role="status">
+        ) : field === 'titles' ? (
           <ul className="ai-list">
             {Object.entries(ai.titles ?? {}).map(([p, t]) => (
               <li key={p}>
@@ -159,50 +147,33 @@ export function Editor({ id }: { id: string }) {
               </li>
             ))}
           </ul>
-          <div className="ai-actions">
-            <button className="btn-text" onClick={close}>
-              Annulla
-            </button>
+        ) : (
+          <p className="ai-text">{ai.text}</p>
+        )}
+        <div className="ai-actions">
+          {field === 'title' && !ai.error && (
+            <span className="hint">
+              {ai.text!.length}/{limit}
+            </span>
+          )}
+          {ai.error?.includes('Impostazioni') && (
+            <a className="btn-text" href="#/settings">
+              Apri Impostazioni
+            </a>
+          )}
+          <button className="btn-text" onClick={close}>
+            {apply ? 'Annulla' : 'Chiudi'}
+          </button>
+          {apply && (
             <button
               className="btn-text accent"
               onClick={() => {
-                set({ titleOverride: { ...l.titleOverride, ...ai.titles } })
+                set(apply)
                 close()
               }}
             >
               Usa
             </button>
-          </div>
-        </div>
-      )
-    return (
-      <div className="ai-preview" role="status">
-        <p className="ai-text">{ai.text}</p>
-        <div className="ai-actions">
-          {field === 'title' && (
-            <span className="hint">
-              {ai.text!.length}/{limit}
-            </span>
-          )}
-          {field === 'photos' ? (
-            <button className="btn-text" onClick={close}>
-              Chiudi
-            </button>
-          ) : (
-            <>
-              <button className="btn-text" onClick={close}>
-                Annulla
-              </button>
-              <button
-                className="btn-text accent"
-                onClick={() => {
-                  set({ [field]: ai.text! })
-                  close()
-                }}
-              >
-                Usa
-              </button>
-            </>
           )}
         </div>
       </div>
