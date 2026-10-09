@@ -136,7 +136,9 @@ async function askCompatible(content: Content[], maxTokens: number, schema: obje
   return typeof c === 'string' ? c : (c ?? []).map((x) => x.text ?? '').join('')
 }
 
-async function ask(content: Content[], maxTokens: number, schema?: object): Promise<string> {
+/** Una richiesta al servizio scelto: le foto (se ci sono) prima del testo. */
+async function ask(text: string, maxTokens: number, { schema, images = [] }: { schema?: object; images?: Content[] } = {}): Promise<string> {
+  const content: Content[] = [...images, { type: 'text', text }]
   const { ai } = await getSettings()
   const r = resolveAi(ai)
   const noKey = !!PROVIDERS[r.id].noKey
@@ -158,25 +160,20 @@ async function ask(content: Content[], maxTokens: number, schema?: object): Prom
       if (i === models.length - 1 || !(status === 404 || status === 429 || status >= 500)) throw e // ogni modello ha il suo limite gratuito
     }
   }
-  const text = raw.replace(/<think>[\s\S]*?<\/think>/g, '').trim() // alcuni modelli locali mostrano il ragionamento
-  if (!text) throw new Error('Risposta vuota dal servizio AI. Riprova.')
-  return text
+  const answer = raw.replace(/<think>[\s\S]*?<\/think>/g, '').trim() // alcuni modelli locali mostrano il ragionamento
+  if (!answer) throw new Error('Risposta vuota dal servizio AI. Riprova.')
+  return answer
 }
 
 /** Prova la configurazione dalle Impostazioni. */
-export const testAi = () => ask([{ type: 'text', text: 'Rispondi solo con la parola: funziona' }], 50)
+export const testAi = () => ask('Rispondi solo con la parola: funziona', 50)
 
 export async function improveTitle(l: Listing, maxChars: number, tone: Tone): Promise<string> {
   const out = await ask(
-    [
-      {
-        type: 'text',
-        text: `${facts(l)}
+    `${facts(l)}
 
 Scrivi un titolo migliore per questo annuncio: chiaro, con marca e modello se noti, e le parole chiave che un acquirente cercherebbe.
 Massimo ${maxChars} caratteri, spazi inclusi. Niente emoji, niente MAIUSCOLO, niente punti esclamativi. ${TONE[tone]}`,
-      },
-    ],
     1000,
   )
   return clip(out.split('\n')[0].replace(/^["'«“]+|["'»”]+$/g, '').trim(), maxChars)
@@ -184,15 +181,10 @@ Massimo ${maxChars} caratteri, spazi inclusi. Niente emoji, niente MAIUSCOLO, ni
 
 export async function improveDescription(l: Listing, tone: Tone): Promise<string> {
   return ask(
-    [
-      {
-        type: 'text',
-        text: `${facts(l)}
+    `${facts(l)}
 
 Riscrivi la descrizione dell'annuncio in modo onesto e ben strutturato: una frase iniziale su cos'è l'oggetto, poi condizioni e difetti (se indicati), poi taglia/misure e dettagli utili.
 Usa paragrafi brevi o un elenco puntato con "-". Testo semplice, niente markdown, niente emoji. Non aggiungere informazioni che non ci sono. ${TONE[tone]}`,
-      },
-    ],
     2000,
   )
 }
@@ -200,23 +192,20 @@ Usa paragrafi brevi o un elenco puntato con "-". Testo semplice, niente markdown
 /** Un titolo per ogni sito, ciascuno entro il proprio limite di caratteri. */
 export async function titlesPerSite(l: Listing, platforms: Platform[], tone: Tone): Promise<Partial<Record<Platform, string>>> {
   const out = await ask(
-    [
-      {
-        type: 'text',
-        text: `${facts(l)}
+    `${facts(l)}
 
 Scrivi un titolo per ciascun sito, adatto a come cercano gli acquirenti su quel sito, con marca e modello se noti.
 ${platforms.map((p) => `- ${p} (${PLATFORM_LABEL[p]}): massimo ${TITLE_MAX[p]} caratteri`).join('\n')}
 eBay premia le parole chiave precise; Subito e Facebook titoli brevi e chiari; Vinted marca, tipo e taglia.
 Niente emoji, niente MAIUSCOLO, niente punti esclamativi. ${TONE[tone]}`,
-      },
-    ],
     2000,
     {
-      type: 'object',
-      properties: Object.fromEntries(platforms.map((p) => [p, { type: 'string' }])),
-      required: platforms,
-      additionalProperties: false,
+      schema: {
+        type: 'object',
+        properties: Object.fromEntries(platforms.map((p) => [p, { type: 'string' }])),
+        required: platforms,
+        additionalProperties: false,
+      },
     },
   )
   const data = jsonFrom(out)
@@ -238,11 +227,7 @@ async function photoContent(l: Listing, max: number): Promise<Content[]> {
 /** Consigli sulle foto: luce, sfondo, copertina, difetti visibili da dichiarare. */
 export async function checkPhotos(l: Listing): Promise<string> {
   return ask(
-    [
-      ...(await photoContent(l, 8)),
-      {
-        type: 'text',
-        text: `Queste sono le foto di un annuncio, nell'ordine in cui verranno pubblicate (foto 1 = copertina).
+    `Queste sono le foto di un annuncio, nell'ordine in cui verranno pubblicate (foto 1 = copertina).
 <dati_annuncio>Titolo: ${(l.title || 'oggetto usato').replace(/<\/?dati_annuncio>/gi, '')}</dati_annuncio>
 Dai consigli pratici e brevi per vendere meglio, in un elenco con "-":
 - quale foto usare come copertina e perché (indica il numero);
@@ -250,25 +235,19 @@ Dai consigli pratici e brevi per vendere meglio, in un elenco con "-":
 - foto mancanti utili (es. etichetta, retro, dettaglio dei difetti);
 - difetti o segni d'usura visibili da dichiarare nella descrizione.
 Massimo 8 punti. Testo semplice, niente markdown oltre ai trattini.`,
-      },
-    ],
     1500,
+    { images: await photoContent(l, 8) },
   )
 }
 
 export async function describeFromPhotos(l: Listing, tone: Tone): Promise<string> {
   return ask(
-    [
-      ...(await photoContent(l, 4)),
-      {
-        type: 'text',
-        text: `${facts(l)}
+    `${facts(l)}
 
 Scrivi la descrizione dell'annuncio basandoti sulle foto e sui dati qui sopra. Descrivi solo ciò che si vede chiaramente (tipo di oggetto, colore, stato visibile, eventuali segni d'usura) e i dati forniti; se qualcosa non è certo, non citarlo.
 Paragrafi brevi o elenco con "-". Testo semplice, niente markdown, niente emoji. ${TONE[tone]}`,
-      },
-    ],
     2000,
+    { images: await photoContent(l, 4) },
   )
 }
 
