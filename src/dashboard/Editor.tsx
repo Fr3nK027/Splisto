@@ -486,7 +486,7 @@ export function Editor({ id }: { id: string }) {
             ) : (
               <>
                 <span className="hint">Venduto su</span>
-                <select value={soldPick} onChange={(e) => setSoldPick(e.target.value as Platform | 'altro')}>
+                <select aria-label="Venduto su" value={soldPick} onChange={(e) => setSoldPick(e.target.value as Platform | 'altro')}>
                   {published.map((p) => (
                     <option key={p} value={p}>
                       {PLATFORM_LABEL[p]}

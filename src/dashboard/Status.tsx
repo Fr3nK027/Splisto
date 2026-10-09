@@ -135,6 +135,7 @@ export function Status({ listing, onChanged, onReopen }: Props) {
                 <div className="status-actions">
                   <input
                     type="url"
+                    aria-label={`Link dell’annuncio su ${PLATFORM_LABEL[p]}`}
                     placeholder="Link dell’annuncio (si salva da solo dopo la pubblicazione)"
                     defaultValue={s?.url ?? ''}
                     key={s?.url ?? ''}

@@ -81,7 +81,7 @@ export function Photos({ photos, onChange }: { photos: Blob[]; onChange: (p: Blo
               type="file"
               accept="image/*"
               multiple
-              hidden
+              className="sr-only"
               onChange={(e) => {
                 if (e.target.files) void add(e.target.files)
                 e.target.value = ''
