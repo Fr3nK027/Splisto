@@ -5,9 +5,9 @@ import { editUrlFor, SITE_URL } from '../content/text'
 import { bulkPatch } from '../lib/bulk'
 import { allListings, deleteListing, duplicateListing, getListing, newListing, saveFields, saveListing } from '../lib/db'
 import { outOfSync, PLATFORM_LABEL, STALE_DAYS } from '../lib/platforms'
-import { PLATFORMS, type AuthState, type Listing, type Msg, type Platform } from '../lib/types'
+import { PLATFORMS, type AuthState, type LastImport, type Listing, type Msg, type Platform } from '../lib/types'
 import { BulkBar } from './BulkBar'
-import { ago, Dot, Logo, STATE_LABEL, StatPair, Thumb, useAuth, useLastImport, useStatusChanged, type LastImport } from './ui'
+import { ago, Dot, Logo, STATE_LABEL, StatPair, Thumb, useAuth, useLastImport, useStatusChanged } from './ui'
 
 const DAY = 86_400_000
 const fmt = (n: number | null) => (n == null ? '–' : n.toLocaleString('it-IT'))

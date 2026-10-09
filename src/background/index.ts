@@ -7,7 +7,7 @@ import { resizeImage } from '../lib/image'
 import { categoryFor, PLATFORM_LABEL, sitePriceFor, titleFor } from '../lib/platforms'
 import { getSettings } from '../lib/settings'
 import { allowed, missingFromSite, sameRemote } from './rules'
-import { PLATFORMS, type AuthState, type ImportedItem, type ItemDetail, type JobListing, type JobReply, type Listing, type Msg, type Platform, type TabMsg } from '../lib/types'
+import { PLATFORMS, type AuthState, type ImportedItem, type ItemDetail, type JobListing, type LastImport, type JobReply, type Listing, type Msg, type Platform, type TabMsg } from '../lib/types'
 
 /*
  * Job = "cosa deve fare la scheda X":
@@ -59,6 +59,32 @@ async function jobFor(sender: chrome.runtime.MessageSender): Promise<Job | undef
 }
 const setJob = (tabId: number, job: Job) => chrome.storage.session.set({ [key(tabId)]: job })
 const dropJob = (tabId: number) => chrome.storage.session.remove(key(tabId))
+
+/** Fine del job: lo toglie e chiude la scheda se l'aveva aperta l'estensione in background. */
+async function closeJob(tabId: number, job: Job) {
+  await dropJob(tabId)
+  if (job.autoClose) await chrome.tabs.remove(tabId).catch(() => {})
+}
+
+/** Tutti i job aperti, con la loro scheda. */
+async function allJobs(): Promise<[number, Job][]> {
+  return Object.entries(await chrome.storage.session.get(null))
+    .filter(([k]) => k.startsWith('job:'))
+    .map(([k, v]) => [Number(k.slice(4)), v as Job])
+}
+
+/** Schede di quel tipo che non hanno risposto in tempo: chiuse, e per ognuna `then`. */
+async function expire(kind: Job['kind'], then: (j: Job) => Promise<unknown>) {
+  for (const [id, j] of await allJobs()) {
+    if (j.kind !== kind) continue
+    await dropJob(id)
+    await chrome.tabs.remove(id).catch(() => {})
+    await then(j)
+  }
+}
+
+const toast = (id: string, title: string, message: string, priority = 0) =>
+  chrome.notifications.create(id, { type: 'basic', iconUrl: chrome.runtime.getURL('icons/icon-128.png'), title, message, priority })
 
 // Le code sono lette e riscritte da più eventi: un lucchetto evita aggiornamenti persi.
 let lock: Promise<unknown> = Promise.resolve()
@@ -187,13 +213,7 @@ async function setAuth(p: Platform, ok: boolean | null, broken?: string[]) {
   const b = broken ?? prev?.broken
   await chrome.storage.local.set({ [authKey(p)]: { ok, at: Date.now(), ...(b?.length && { broken: b }) } satisfies AuthState })
   if (ok === false && prev?.ok !== false) {
-    chrome.notifications.create(`auth:${p}`, {
-      type: 'basic',
-      iconUrl: chrome.runtime.getURL('icons/icon-128.png'),
-      title: `${PLATFORM_LABEL[p]}: sei stato disconnesso`,
-      message: 'Clicca per aprire il sito e rientrare.',
-      priority: 2,
-    })
+    toast(`auth:${p}`, `${PLATFORM_LABEL[p]}: sei stato disconnesso`, 'Clicca per aprire il sito e rientrare.', 2)
   }
   await paintBadge()
 }
@@ -209,8 +229,7 @@ async function paintBadge() {
 
 /** Apre in background la pagina "nuovo annuncio" di ogni sito e guarda se chiede il login. */
 async function checkAllAuth() {
-  const jobs = Object.values(await chrome.storage.session.get(null)) as Job[]
-  if (jobs.some((j) => j?.kind === 'auth')) return // controllo già in corso
+  if ((await allJobs()).some(([, j]) => j.kind === 'auth')) return // controllo già in corso
   const auth = await allAuth()
   for (const p of PLATFORMS) {
     await chrome.storage.local.set({ [authKey(p)]: { ...auth[p], ok: auth[p]?.ok ?? null, at: auth[p]?.at ?? 0, checking: true } satisfies AuthState })
@@ -221,20 +240,13 @@ async function checkAllAuth() {
 
 /** Schede di controllo che non hanno risposto: chiudile, esito "non verificabile". */
 async function authTimeout() {
-  for (const [k, v] of Object.entries(await chrome.storage.session.get(null))) {
-    const j = v as Job
-    if (!k.startsWith('job:') || j.kind !== 'auth') continue
-    const id = Number(k.slice(4))
-    await dropJob(id)
-    await chrome.tabs.remove(id).catch(() => {})
-    await setAuth(j.platform, null)
-  }
+  await expire('auth', (j) => setAuth(j.platform, null))
   // stato "checking" senza più una scheda dietro (scheda chiusa a mano, browser riavviato, estensione ricaricata)
-  const jobs = Object.values(await chrome.storage.session.get(null)) as Job[]
+  const jobs = await allJobs()
   const auth = await allAuth()
   for (const p of PLATFORMS) {
     const a = auth[p]
-    if (a?.checking && !jobs.some((j) => j?.kind === 'auth' && j.platform === p)) {
+    if (a?.checking && !jobs.some(([, j]) => j.kind === 'auth' && j.platform === p)) {
       const { checking: _, ...rest } = a
       await chrome.storage.local.set({ [authKey(p)]: rest satisfies AuthState })
     }
@@ -249,17 +261,9 @@ async function scheduleAuth() {
 
 // --- Importazione degli annunci già online (es. messi dal telefono) ---
 
-interface LastImport {
-  at: number
-  created: number
-  running: Platform[]
-  errors: Partial<Record<Platform, string>>
-}
-
 /** Apre in background la pagina "i miei annunci" di ogni sito (o solo di quelli indicati). */
 async function importAll(platforms: readonly Platform[] = PLATFORMS) {
-  const jobs = Object.values(await chrome.storage.session.get(null)) as Job[]
-  if (jobs.some((j) => j?.kind === 'import')) return // importazione già in corso
+  if ((await allJobs()).some(([, j]) => j.kind === 'import')) return // importazione già in corso
   const prev = (await chrome.storage.local.get('lastImport')).lastImport as LastImport | undefined
   const errors = platforms.length === PLATFORMS.length ? {} : { ...prev?.errors } // gli errori degli altri siti restano
   await chrome.storage.local.set({ lastImport: { at: Date.now(), created: 0, running: [...platforms], errors } satisfies LastImport })
@@ -280,16 +284,10 @@ const noteImport = (p: Platform, created: number, error?: string) =>
   })
 
 async function importTimeout() {
-  for (const [k, v] of Object.entries(await chrome.storage.session.get(null))) {
-    const j = v as Job
-    if (!k.startsWith('job:') || j.kind !== 'import') continue
-    await dropJob(Number(k.slice(4)))
-    await chrome.tabs.remove(Number(k.slice(4))).catch(() => {})
-    await noteImport(j.platform, 0, 'Nessuna risposta dalla pagina')
-  }
-  const jobs = Object.values(await chrome.storage.session.get(null)) as Job[]
+  await expire('import', (j) => noteImport(j.platform, 0, 'Nessuna risposta dalla pagina'))
+  const jobs = await allJobs()
   const li = (await chrome.storage.local.get('lastImport')).lastImport as LastImport | undefined
-  for (const p of li?.running ?? []) if (!jobs.some((j) => j?.kind === 'import' && j.platform === p)) await noteImport(p, 0, 'Interrotta')
+  for (const p of li?.running ?? []) if (!jobs.some(([, j]) => j.kind === 'import' && j.platform === p)) await noteImport(p, 0, 'Interrotta')
 }
 
 /** Scarica una foto dal sito e la ridimensiona come quelle caricate a mano. */
@@ -414,13 +412,12 @@ const applyImport = (p: Platform, items: ImportedItem[], partial = false) =>
     }
     for (const l of soldNow) {
       const others = PLATFORMS.filter((q) => q !== p && l.status[q]?.state === 'published')
-      chrome.notifications.create(`sold:${l.id}`, {
-        type: 'basic',
-        iconUrl: chrome.runtime.getURL('icons/icon-128.png'),
-        title: `Venduto su ${PLATFORM_LABEL[p]}: ${l.title.slice(0, 60)}`,
-        message: others.length ? `Togli subito l'annuncio da ${others.map((q) => PLATFORM_LABEL[q]).join(', ')} per non venderlo due volte.` : 'Segnato come venduto in Splisto.',
-        priority: 2,
-      })
+      toast(
+        `sold:${l.id}`,
+        `Venduto su ${PLATFORM_LABEL[p]}: ${l.title.slice(0, 60)}`,
+        others.length ? `Togli subito l'annuncio da ${others.map((q) => PLATFORM_LABEL[q]).join(', ')} per non venderlo due volte.` : 'Segnato come venduto in Splisto.',
+        2,
+      )
     }
     if (details.length) {
       await withQueues((q) => {
@@ -429,12 +426,11 @@ const applyImport = (p: Platform, items: ImportedItem[], partial = false) =>
       })
     }
     if (created) {
-      chrome.notifications.create(`import:${p}:${Date.now()}`, {
-        type: 'basic',
-        iconUrl: chrome.runtime.getURL('icons/icon-128.png'),
-        title: `${created === 1 ? 'Nuovo annuncio' : `${created} nuovi annunci`} da ${PLATFORM_LABEL[p]}`,
-        message: 'Importati in Splisto: controllali e pubblicali anche sugli altri siti.',
-      })
+      toast(
+        `import:${p}:${Date.now()}`,
+        `${created === 1 ? 'Nuovo annuncio' : `${created} nuovi annunci`} da ${PLATFORM_LABEL[p]}`,
+        'Importati in Splisto: controllali e pubblicali anche sugli altri siti.',
+      )
     }
     return created
   })
@@ -477,10 +473,9 @@ async function applyDetail(listingId: string, p: Platform, d: ItemDetail) {
  * niente stati "in apertura / in coda" o aggiornamenti in corso rimasti appesi senza una scheda dietro.
  */
 async function resetStuck() {
-  const session = await chrome.storage.session.get(null)
-  const jobs = Object.values(session) as Job[]
-  const queued = (session.queues as Queues | undefined)?.fill ?? []
-  const live = (id: string, p: Platform) => jobs.some((j) => j?.kind === 'fill' && j.listingId === id && j.platform === p) || queued.some((q) => q.listingId === id && q.platform === p)
+  const jobs = await allJobs()
+  const queued = ((await chrome.storage.session.get('queues')).queues as Queues | undefined)?.fill ?? []
+  const live = (id: string, p: Platform) => jobs.some(([, j]) => j.kind === 'fill' && j.listingId === id && j.platform === p) || queued.some((q) => q.listingId === id && q.platform === p)
   for (const l of await allListings()) {
     const stuck = PLATFORMS.filter((p) => {
       const s = l.status[p]
@@ -496,12 +491,17 @@ async function resetStuck() {
   }
 }
 
-chrome.runtime.onInstalled.addListener(async () => {
+/** Avvio del browser o dell'estensione: ripulisce ciò che è rimasto a metà e riprogramma i controlli. */
+async function boot() {
   await resetStuck()
   await scheduleAuth()
   await authTimeout()
   await importTimeout()
   await paintBadge()
+}
+
+chrome.runtime.onInstalled.addListener(async () => {
+  await boot()
   // ricaricata dalla dashboard per eseguire un comando che il service worker vecchio non conosceva
   const { afterReload } = await chrome.storage.local.get('afterReload')
   if (afterReload) {
@@ -512,12 +512,7 @@ chrome.runtime.onInstalled.addListener(async () => {
   }
 })
 chrome.runtime.onStartup.addListener(async () => {
-  if (await reloadIfStale(false)) return
-  await resetStuck()
-  await scheduleAuth()
-  await authTimeout()
-  await importTimeout()
-  await paintBadge()
+  if (!(await reloadIfStale(false))) await boot()
 })
 chrome.storage.onChanged.addListener((ch, area) => {
   if (area === 'local' && 'authEvery' in ch) void scheduleAuth()
@@ -641,8 +636,7 @@ async function handle(msg: Msg, sender: chrome.runtime.MessageSender): Promise<u
       if (job.kind === 'fill' && (msg.state === 'filled' || msg.state === 'incomplete')) await setAuth(job.platform, true)
       if (job.kind !== 'fill') {
         // es. non loggato mentre si leggono le statistiche: chiudi e vai avanti
-        await dropJob(tabId)
-        if (job.autoClose) await chrome.tabs.remove(tabId).catch(() => {})
+        await closeJob(tabId, job)
         return true
       }
       if (job.edit) {
@@ -703,8 +697,7 @@ async function handle(msg: Msg, sender: chrome.runtime.MessageSender): Promise<u
       const job = await jobFor(sender)
       if (!job || job.kind !== 'stats') return false
       await updateStats(job.listingId, job.platform, { views: msg.views, likes: msg.likes })
-      await dropJob(tabId!)
-      if (job.autoClose) await chrome.tabs.remove(tabId!).catch(() => {}) // onRemoved apre la prossima
+      await closeJob(tabId!, job) // onRemoved apre la prossima
       void notify(job.listingId)
       return true
     }
@@ -731,8 +724,7 @@ async function handle(msg: Msg, sender: chrome.runtime.MessageSender): Promise<u
       await setAuth(msg.platform, msg.ok, Array.isArray(msg.broken) ? msg.broken.map(String).slice(0, 10) : undefined)
       const job = await jobFor(sender)
       if (job?.kind === 'auth') {
-        await dropJob(tabId!)
-        if (job.autoClose) await chrome.tabs.remove(tabId!).catch(() => {})
+        await closeJob(tabId!, job)
       }
       return true
     }
@@ -742,8 +734,7 @@ async function handle(msg: Msg, sender: chrome.runtime.MessageSender): Promise<u
       if (job?.kind !== 'import') return 0
       const created = msg.error ? 0 : await applyImport(msg.platform, msg.items, msg.partial)
       await noteImport(msg.platform, created, msg.error)
-      await dropJob(tabId!)
-      if (job.autoClose) await chrome.tabs.remove(tabId!).catch(() => {})
+      await closeJob(tabId!, job)
       void notify('')
       return created
     }
@@ -752,8 +743,7 @@ async function handle(msg: Msg, sender: chrome.runtime.MessageSender): Promise<u
       const job = await jobFor(sender)
       if (job?.kind !== 'detail') return false
       await applyDetail(job.listingId, job.platform, msg.detail)
-      await dropJob(tabId!)
-      if (job.autoClose) await chrome.tabs.remove(tabId!).catch(() => {}) // onRemoved apre la prossima
+      await closeJob(tabId!, job) // onRemoved apre la prossima
       void notify(job.listingId)
       return true
     }
@@ -770,13 +760,8 @@ async function handle(msg: Msg, sender: chrome.runtime.MessageSender): Promise<u
 
     case 'teach': {
       // trova la scheda che sta compilando quell'annuncio su quel sito
-      const all = await chrome.storage.session.get(null)
-      const entry = Object.entries(all).find(([k, v]) => {
-        const j = v as Job
-        return k.startsWith('job:') && j.listingId === msg.listingId && j.platform === msg.platform && j.kind === 'fill'
-      })
-      if (!entry) return false
-      const id = Number(entry[0].slice(4))
+      const id = (await allJobs()).find(([, j]) => j.kind === 'fill' && j.listingId === msg.listingId && j.platform === msg.platform)?.[0]
+      if (id == null) return false
       const tab = await chrome.tabs.update(id, { active: true })
       if (tab?.windowId != null) await chrome.windows.update(tab.windowId, { focused: true })
       await chrome.tabs.sendMessage(id, { type: 'teach', key: msg.key, label: msg.label } satisfies TabMsg)

@@ -72,6 +72,14 @@ export interface AuthState {
   broken?: string[]
 }
 
+/** Riepilogo dell'ultima importazione dai siti (chrome.storage.local 'lastImport', scritto dal service worker). */
+export interface LastImport {
+  at: number
+  created: number
+  running: Platform[]
+  errors: Partial<Record<Platform, string>>
+}
+
 /** Annuncio letto dalla pagina "i miei annunci" di un sito. */
 export interface ImportedItem {
   url: string

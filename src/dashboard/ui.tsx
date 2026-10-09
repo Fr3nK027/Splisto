@@ -1,7 +1,7 @@
 import { Eye, Heart } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { PLATFORM_LABEL } from '../lib/platforms'
-import { PLATFORMS, type AuthState, type Msg, type Platform, type PlatformStats, type StatusState } from '../lib/types'
+import { PLATFORMS, type AuthState, type LastImport, type Msg, type Platform, type PlatformStats, type StatusState } from '../lib/types'
 
 export const STATE_LABEL: Record<StatusState, string> = {
   idle: 'Non inviato',
@@ -106,13 +106,6 @@ export function Logo({ p, mark = false }: { p: Platform; mark?: boolean }) {
       {p === 'facebook' && !mark && <span className="logo-sub">Marketplace</span>}
     </span>
   )
-}
-
-export interface LastImport {
-  at: number
-  created: number
-  running: Platform[]
-  errors: Partial<Record<Platform, string>>
 }
 
 /** Riepilogo dell'ultima importazione dai siti (scritto dal service worker in chrome.storage.local). */
