@@ -1,10 +1,11 @@
 import { SITES } from '../content/selectors'
-import { conditionFrom, editUrlFor, htmlToText, idInUrl, PHOTO_URL, platformOfUrl, sameItem, sameUrl, SITE_URL, withDetails } from '../content/text'
+import { conditionFrom, editUrlFor, htmlToText, idInUrl, PHOTO_URL, sameItem, sameUrl, SITE_URL, withDetails } from '../content/text'
 import { allListings, blobToWire, getListing, newListing, patchListing, saveListing, updateStats, updateStatus } from '../lib/db'
 import { reloadIfStale } from '../lib/fresh'
 import { resizeImage } from '../lib/image'
 import { categoryFor, PLATFORM_LABEL, sitePriceFor, titleFor } from '../lib/platforms'
 import { getSettings } from '../lib/settings'
+import { allowed, missingFromSite, sameRemote } from './rules'
 import { PLATFORMS, type AuthState, type ImportedItem, type ItemDetail, type JobListing, type JobReply, type Listing, type Msg, type Platform, type TabMsg } from '../lib/types'
 
 /*
@@ -326,11 +327,7 @@ const applyImport = (p: Platform, items: ImportedItem[], create: boolean, partia
       if (replaced(it.remoteId) || replaced(idInUrl(it.url))) continue // vecchio annuncio sostituito con "Duplica come nuovo"
       seen.add(it.remoteId)
       seenUrls.push(it.url)
-      const same = (x: Listing) => {
-        const s = x.status[p]
-        return (!!s?.remoteId && s.remoteId === it.remoteId) || sameUrl(s?.url ?? '', it.url) || (!!idInUrl(s?.url) && idInUrl(s?.url) === it.remoteId)
-      }
-      let l = all.find(same)
+      let l = all.find((x) => sameRemote(x.status[p], it))
       let linked = false
       if (!l && create) {
         l = all.find((x) => !x.sold && !x.status[p]?.remoteId && !x.status[p]?.url && sameItem(x, it))
@@ -403,12 +400,7 @@ const applyImport = (p: Platform, items: ImportedItem[], create: boolean, partia
     // alla seconda di fila si segnala. Quelli pubblicati nell'ultima ora possono non essere ancora in elenco.
     if (create && !partial && seen.size) {
       for (const x of all) {
-        const s = x.status[p]
-        if (x.sold || s?.state !== 'published' || (!s.remoteId && !s.url)) continue
-        if (Date.now() - (s.publishedAt ?? 0) < 3_600_000) continue
-        const there =
-          (!!s.remoteId && seen.has(s.remoteId)) || (!!idInUrl(s.url) && seen.has(idInUrl(s.url)!)) || seenUrls.some((u) => sameUrl(s.url ?? '', u))
-        if (there) continue
+        if (!missingFromSite(x.status[p], !!x.sold, seen, seenUrls)) continue
         await patchListing(x.id, (y) => {
           const st = y.status[p]
           if (st) st.missingCount = (st.missingCount ?? 0) + 1
@@ -572,22 +564,8 @@ chrome.tabs.onRemoved.addListener((tabId) => {
   })
 })
 
-// Comandi che solo la dashboard può dare; gli altri messaggi arrivano dalle schede dei siti.
-const FROM_DASHBOARD = new Set<Msg['type']>(['publish', 'relist', 'refreshStats', 'importAll', 'checkAuth', 'teach'])
-
-function allowed(msg: Msg, sender: chrome.runtime.MessageSender): boolean {
-  if (sender.id !== chrome.runtime.id || !msg || typeof msg !== 'object') return false
-  const fromDashboard = !!sender.url?.startsWith(chrome.runtime.getURL(''))
-  if (FROM_DASHBOARD.has(msg.type)) return fromDashboard
-  if (msg.type === 'statusChanged') return false
-  // dalle schede: la piattaforma dichiarata deve essere quella del sito da cui arriva il messaggio
-  const site = platformOfUrl(sender.url ?? '')
-  if (!sender.tab || !site) return false
-  return !('platform' in msg) || msg.platform === site
-}
-
 chrome.runtime.onMessage.addListener((msg: Msg, sender, reply) => {
-  if (!allowed(msg, sender)) return false
+  if (!allowed(msg, sender, chrome.runtime.id, chrome.runtime.getURL(''))) return false
   handle(msg, sender).then(reply, (e) => {
     console.error('[Splisto]', e)
     reply({ error: (e as Error).message ?? String(e) })
