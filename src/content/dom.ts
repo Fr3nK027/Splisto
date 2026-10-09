@@ -250,6 +250,7 @@ export const setLearned = (l: Record<string, Locator>) => void (learned = l)
 export class Form {
   missing: string[] = []
   missingKeys: string[] = []
+  private written: { key: string; label: string; value: string; el: HTMLInputElement }[] = [] // campi a una riga scritti
   constructor(
     private fields: Record<string, Locator[]>,
     private opts: FillOptions = {},
@@ -297,6 +298,7 @@ export class Form {
       ok = false
     }
     if (!ok) this.miss(key, label, mode)
+    else if (el instanceof HTMLInputElement && mode !== 'optional') this.written.push({ key, label, value, el })
     await sleep(150)
   }
 
@@ -344,6 +346,13 @@ export class Form {
   }
 
   result(): FillResult {
+    // Rete di sicurezza: un campo scritto e cambiato dopo (dal sito, o da un menu aperto più tardi) va ricontrollato.
+    // Un testo accorciato dal sito (limite di caratteri) va bene: conta solo se l'inizio coincide.
+    for (const w of this.written) {
+      if (!w.el.isConnected || this.missingKeys.includes(w.key)) continue
+      const now = currentText(w.el)
+      if (!sameText(now, w.value) && !(loose(now) && loose(w.value).startsWith(loose(now)))) this.miss(w.key, `${w.label} (cambiato dopo: controllalo)`)
+    }
     return { ok: this.missing.length === 0, missingFields: this.missing, missingKeys: this.missingKeys }
   }
 }
