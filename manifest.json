@@ -20,7 +20,7 @@
   },
   "options_page": "src/dashboard/index.html",
   "background": {
-    "service_worker": "src/background/index.ts",
+    "service_worker": "src/background/worker.ts",
     "type": "module"
   },
   "permissions": [

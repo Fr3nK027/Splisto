@@ -24,6 +24,7 @@ Serve Node.js 20.19 o più recente.
 npm install
 npm run build      # controllo TypeScript + build in dist/
 npm run check      # controllo TypeScript + test delle funzioni di confronto testo
+npm run e2e        # dopo la build: prova vera in Edge con profilo pulito (BROWSER=... per un altro browser)
 ```
 
 ## Caricare l'estensione
@@ -304,7 +305,7 @@ service worker si vedono in `chrome://extensions` → **service worker** → Con
 
 ```
 manifest.json                 Manifest V3 (elaborato da @crxjs/vite-plugin)
-src/background/index.ts       service worker: apre le schede, assegna i job, aggiorna lo stato
+src/background/worker.ts      service worker: apre le schede, assegna i job, aggiorna lo stato
 src/content/index.ts          script dei siti (iniettato solo nelle schede dell'estensione): login, pagina giusta, adapter
 src/content/dom.ts            ricerca campi, scrittura compatibile con React, menu, foto (DataTransfer)
 src/content/text.ts           confronto testi e formati (con test in tests/)
