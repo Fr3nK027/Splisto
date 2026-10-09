@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { checkPhotos, describeFromPhotos, improveDescription, improveTitle, titlesPerSite } from '../lib/ai'
 import { deleteListing, getListing, saveFields } from '../lib/db'
 import { CATEGORIES, categoryFor, CONDITION_LABEL, ebaySoldSearch, PLATFORM_LABEL, priceFor, TITLE_MAX, titleLimit } from '../lib/platforms'
-import { DEFAULT_SETTINGS, getSettings, netPrice, setSettings, type Settings, type Tone } from '../lib/settings'
+import { DEFAULT_SETTINGS, getSettings, netPrice, setSettings, TONE_LABEL, type Settings, type Tone } from '../lib/settings'
 import { SITE_URL } from '../content/text'
 import { PLATFORMS, type Condition, type Listing, type Msg, type Platform } from '../lib/types'
 import { Photos } from './Photos'
@@ -231,9 +231,11 @@ export function Editor({ id }: { id: string }) {
               void setSettings({ tone: t })
             }}
           >
-            <option value="neutro">Neutro</option>
-            <option value="amichevole">Amichevole</option>
-            <option value="conciso">Conciso</option>
+            {Object.entries(TONE_LABEL).map(([v, label]) => (
+              <option key={v} value={v}>
+                {label}
+              </option>
+            ))}
           </select>
         </label>
       </header>

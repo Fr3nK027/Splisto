@@ -85,7 +85,7 @@ function importText(li?: LastImport): string {
  * Comando al service worker. Dopo una nuova build Chrome tiene il service worker vecchio, che non conosce i comandi
  * nuovi e risponde null: ricarica l'estensione una volta e il comando riparte da solo (vedi onInstalled).
  */
-async function command(msg: Extract<Msg, { type: 'checkAuth' | 'importAll' }>, note: string, onNote: (s: string) => void) {
+async function command(msg: Extract<Msg, { type: 'checkAuth' | 'importAll' | 'refreshStats' }>, note: string, onNote: (s: string) => void) {
   const r = (await chrome.runtime.sendMessage(msg satisfies Msg)) as unknown
   if (r === true) return onNote(note)
   if (r && typeof r === 'object' && 'error' in r) return onNote(`Errore: ${String((r as { error: unknown }).error)}`)
@@ -109,14 +109,8 @@ function Platforms({ items, note, onNote }: { items: Listing[]; note: string; on
 
   const check = () => command({ type: 'checkAuth' }, 'Controllo gli accessi: si aprono e chiudono 5 schede in background (circa 15 secondi).', onNote)
 
-  async function refreshStats() {
-    const r = (await chrome.runtime.sendMessage({ type: 'refreshStats' } satisfies Msg)) as unknown
-    onNote(
-      r === true
-        ? 'Leggo le statistiche dalle pagine dei tuoi annunci: si aprono e chiudono alcune schede in background.'
-        : `Errore: ${r && typeof r === 'object' && 'error' in r ? String((r as { error: unknown }).error) : 'nessuna risposta dall’estensione'}`,
-    )
-  }
+  const refreshStats = () =>
+    command({ type: 'refreshStats' }, 'Leggo le statistiche dalle pagine dei tuoi annunci: si aprono e chiudono alcune schede in background.', onNote)
 
   return (
     <section className="panel" aria-labelledby="pf-title">

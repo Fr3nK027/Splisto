@@ -507,8 +507,7 @@ chrome.runtime.onInstalled.addListener(async () => {
   if (afterReload) {
     await chrome.storage.local.remove('afterReload')
     await chrome.runtime.openOptionsPage()
-    if (afterReload === 'checkAuth') await checkAllAuth()
-    if (afterReload === 'importAll') await importAll()
+    if (afterReload === 'checkAuth' || afterReload === 'importAll' || afterReload === 'refreshStats') await handle({ type: afterReload }, {})
   }
 })
 chrome.runtime.onStartup.addListener(async () => {

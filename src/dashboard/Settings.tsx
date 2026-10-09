@@ -5,7 +5,7 @@ import { exportAll, importAll } from '../lib/db'
 import { PLATFORM_LABEL } from '../lib/platforms'
 import { MODEL_RE, originPattern, PROVIDER_IDS, PROVIDERS, resolveAi, validBaseUrl, type ProviderId } from '../lib/providers'
 import { getApiKey, setApiKey } from '../lib/secret'
-import { cleanSettings, DEFAULT_SETTINGS, getSettings, learnedKey, setSettings, type Settings as S, type Tone } from '../lib/settings'
+import { cleanSettings, DEFAULT_SETTINGS, getSettings, learnedKey, setSettings, TONE_LABEL, type Settings as S, type Tone } from '../lib/settings'
 import { PLATFORMS } from '../lib/types'
 
 export function Settings() {
@@ -175,9 +175,11 @@ export function Settings() {
         <label className="check spaced">
           <span className="hint">Tono predefinito</span>
           <select value={s.tone} onChange={(e) => save({ tone: e.target.value as Tone })}>
-            <option value="neutro">Neutro</option>
-            <option value="amichevole">Amichevole</option>
-            <option value="conciso">Conciso</option>
+            {Object.entries(TONE_LABEL).map(([v, label]) => (
+              <option key={v} value={v}>
+                {label}
+              </option>
+            ))}
           </select>
         </label>
       </section>

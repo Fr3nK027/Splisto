@@ -2,6 +2,7 @@ import { DEFAULT_AI, isProvider, MODEL_RE, type AiSettings } from './providers.t
 import type { Platform } from './types'
 
 export type Tone = 'neutro' | 'amichevole' | 'conciso'
+export const TONE_LABEL: Record<Tone, string> = { neutro: 'Neutro', amichevole: 'Amichevole', conciso: 'Conciso' }
 export interface Fee {
   pct: number // commissione percentuale sul prezzo
   fixed: number // costo fisso per vendita (€)
@@ -51,7 +52,7 @@ const AUTH_EVERY = [0, 3, 6, 12, 24]
 export function cleanSettings(raw: Record<string, unknown>): Partial<Settings> {
   const PLATFORMS = Object.keys(DEFAULT_SETTINGS.fees) as Platform[]
   const out: Partial<Settings> = {}
-  if (raw.tone === 'neutro' || raw.tone === 'amichevole' || raw.tone === 'conciso') out.tone = raw.tone
+  if (typeof raw.tone === 'string' && Object.hasOwn(TONE_LABEL, raw.tone)) out.tone = raw.tone as Tone
   if (typeof raw.sequential === 'boolean') out.sequential = raw.sequential
   if (AUTH_EVERY.includes(raw.authEvery as number)) out.authEvery = raw.authEvery as number
   const footers = raw.footers && typeof raw.footers === 'object' ? (raw.footers as Record<string, unknown>) : {}
