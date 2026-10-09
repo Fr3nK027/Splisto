@@ -15,14 +15,15 @@ import { PLATFORMS, type AuthState, type ImportedItem, type ItemDetail, type Job
  *  - stats: legge visualizzazioni e like dalla pagina dell'annuncio (autoClose = scheda aperta da noi);
  *  - auth: controlla solo se sei ancora loggato (listingId vuoto);
  *  - import: legge la pagina "i miei annunci" del sito (listingId vuoto);
- *  - detail: legge descrizione, foto e statistiche di un annuncio appena importato.
+ *  - detail: legge descrizione, foto e statistiche di un annuncio appena importato;
+ *  - login: pagina di accesso aperta da Splisto; quando sei rientrato conferma l'accesso (la scheda resta aperta).
  * Tutto in storage.session perché il service worker può essere fermato in qualsiasi momento.
  * Lo script dei siti è registrato solo finché c'è almeno un job (syncScript): senza lavori in corso nessuna pagina lo riceve.
  */
 interface Job {
   listingId: string
   platform: Platform
-  kind: 'fill' | 'stats' | 'auth' | 'import' | 'detail'
+  kind: 'fill' | 'stats' | 'auth' | 'import' | 'detail' | 'login'
   phase?: 'await'
   autoClose?: boolean
   url?: string
@@ -266,6 +267,9 @@ async function paintBadge() {
   await chrome.action.setBadgeText({ text: off.length ? String(off.length) : '' })
   await chrome.action.setTitle({ title: off.length ? `Disconnesso da: ${off.map((p) => PLATFORM_LABEL[p]).join(', ')}` : 'Apri Splisto' })
 }
+
+/** Pagina di accesso del sito in primo piano: lo script conferma "Connesso" appena hai fatto l'accesso. */
+const openLogin = (p: Platform) => openTab(SITES[p].loginUrl, { listingId: '', platform: p, kind: 'login' }, true)
 
 /** Apre in background la pagina "nuovo annuncio" di ogni sito e guarda se chiede il login. */
 async function checkAllAuth() {
@@ -556,7 +560,7 @@ chrome.notifications.onClicked.addListener((id) => {
   if (id.startsWith('sold:')) void chrome.tabs.create({ url: chrome.runtime.getURL(`src/dashboard/index.html#/edit/${id.slice(5)}`), active: true })
   if (id.startsWith('import:')) void chrome.runtime.openOptionsPage()
   const p = id.startsWith('auth:') ? (id.slice(5) as Platform) : null
-  if (p && SITES[p]) void chrome.tabs.create({ url: SITES[p].loginUrl, active: true }) // notifica di disconnessione: vai al login
+  if (p && SITES[p]) void openLogin(p) // notifica di disconnessione: vai al login
   chrome.notifications.clear(id)
 })
 
@@ -738,9 +742,7 @@ async function handle(msg: Msg, sender: chrome.runtime.MessageSender): Promise<u
     case 'auth': {
       await setAuth(msg.platform, msg.ok, Array.isArray(msg.broken) ? msg.broken.map(String).slice(0, 10) : undefined)
       const job = await jobFor(sender)
-      if (job?.kind === 'auth') {
-        await closeJob(tabId!, job)
-      }
+      if (job?.kind === 'auth' || (job?.kind === 'login' && msg.ok)) await closeJob(tabId!, job) // login: scheda aperta, non autoClose
       return true
     }
 
@@ -771,6 +773,11 @@ async function handle(msg: Msg, sender: chrome.runtime.MessageSender): Promise<u
 
     case 'checkAuth':
       await checkAllAuth()
+      return true
+
+    case 'login':
+      if (!PLATFORMS.includes(msg.platform)) return false
+      await openLogin(msg.platform)
       return true
 
     case 'teach': {

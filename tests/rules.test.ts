@@ -14,6 +14,7 @@ test('allowed: comandi solo dalla dashboard', () => {
   assert.equal(allowed(publish, tab('https://www.vinted.it/items/new'), ID, BASE), false)
   assert.equal(allowed(publish, { ...dash, id: 'altra' }, ID, BASE), false) // altra estensione
   assert.equal(allowed({ type: 'statusChanged', listingId: 'a' }, dash, ID, BASE), false)
+  assert.equal(allowed({ type: 'login', platform: 'ebay' }, tab('https://www.ebay.it/'), ID, BASE), false) // solo la dashboard apre il login
 })
 
 test('allowed: le schede parlano solo per il proprio sito', () => {

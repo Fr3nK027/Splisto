@@ -72,7 +72,7 @@ export const PUBLISH_WORDS =
  * così un link di reindirizzamento (rover.ebay.com, l.facebook.com) in un backup non apre altri siti.
  */
 export const SITE_URL =
-  /^https:\/\/(www\.vinted\.it|www\.ebay\.(?:it|com)|(?:www|areariservata|inserimento)\.subito\.it|(?:www|web|m)\.facebook\.com|(?:www|[a-z]{2})\.wallapop\.com)(\/|$)/i
+  /^https:\/\/(www\.vinted\.it|(?:www|signin)\.ebay\.(?:it|com)|(?:www|areariservata|inserimento)\.subito\.it|(?:www|web|m)\.facebook\.com|(?:www|[a-z]{2})\.wallapop\.com)(\/|$)/i
 /** Server delle foto delle piattaforme (gli unici da cui si scaricano immagini). */
 export const PHOTO_URL = /^https:\/\/([a-z0-9-]+\.)*(vinted\.net|sbito\.it|fbcdn\.net|ebayimg\.com|wallapop\.com)\//i
 

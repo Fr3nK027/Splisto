@@ -147,6 +147,7 @@ export type JobReply =
   | { kind: 'auth' } // controlla solo se sei ancora loggato
   | { kind: 'import' } // legge la pagina "i miei annunci"
   | { kind: 'detail' } // legge descrizione, foto e statistiche di un annuncio importato
+  | { kind: 'login' } // pagina di accesso aperta da Splisto: conferma quando sei rientrato
 
 export type Msg =
   | { type: 'publish'; listingId: string; platforms: Platform[]; queue?: boolean } // queue = sempre uno alla volta
@@ -158,6 +159,7 @@ export type Msg =
   | { type: 'refreshStats' }
   | { type: 'auth'; platform: Platform; ok: boolean | null; broken?: string[] } // broken solo dal controllo accessi
   | { type: 'checkAuth' }
+  | { type: 'login'; platform: Platform } // apre la pagina di accesso del sito
   | { type: 'imported'; platform: Platform; items: ImportedItem[]; error?: string; partial?: boolean }
   | { type: 'detail'; detail: ItemDetail }
   | { type: 'importAll'; platforms?: Platform[] } // senza platforms: tutti i siti

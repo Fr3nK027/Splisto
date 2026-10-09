@@ -10,7 +10,8 @@ import { goToOwnProfile, isMine, readDetail, readMine, wallapopEditUrl, wallapop
 import { SITES } from './selectors'
 import { norm, parseCount } from './text'
 
-// Iniettato dal service worker solo nelle schede aperte da Splisto, a ogni pagina caricata (mai nella navigazione normale).
+// Registrato dal service worker solo mentre c'è un lavoro in corso: lavora nelle schede aperte da Splisto, nelle altre
+// pagine dei siti chiede se c'è un job per la sua scheda e si ferma subito. Senza lavori non esiste.
 const ADAPTERS: Record<Platform, Adapter> = { vinted, ebay, subito, facebook, wallapop }
 const platform = PLATFORMS.find((p) => location.hostname.includes(p))
 let current: JobListing | null = null // annuncio di questa scheda, per "Insegna"
@@ -36,6 +37,16 @@ function loggedOut(p: Platform): boolean {
 }
 
 const loggedIn = (p: Platform) => !!findOne(SITES[p].loggedIn) || !!SITES[p].loggedInText?.test(document.body?.innerText.slice(0, 500) ?? '')
+
+/** Pagina dello stesso dominio usato dal controllo accessi (ebay.com ha una sessione diversa da ebay.it). */
+const sameAuthDomain = (p: Platform) => location.hostname.endsWith(new URL(SITES[p].authUrl ?? SITES[p].url).hostname.replace(/^www\./, ''))
+
+/** Scheda di accesso aperta da Splisto: appena compare il menu utente, l'accesso è confermato (ogni pagina riparte da qui). */
+async function watchLogin(p: Platform) {
+  for (const end = Date.now() + 15 * 60_000; Date.now() < end; await sleep(2000)) {
+    if (loggedIn(p) && sameAuthDomain(p)) return void send({ type: 'auth', platform: p, ok: true })
+  }
+}
 
 /** Controllo accessi: aspetta che la pagina mostri o il menu utente o il login. */
 async function checkAuth(p: Platform) {
@@ -118,6 +129,7 @@ async function run(platform: Platform) {
   const job = (await send({ type: 'getJob', platform })) as JobReply
   if (!job) return // job finito (es. scheda tornata indietro dopo la pubblicazione)
   if (job.kind === 'auth') return checkAuth(platform)
+  if (job.kind === 'login') return watchLogin(platform)
   if (job.kind === 'import') return runImport(platform)
   // pagina pubblica dell'annuncio: si legge anche senza accesso (es. eBay con l'accesso solo su ebay.com)
   if (job.kind === 'detail') return void send({ type: 'detail', detail: await readDetail(platform) })

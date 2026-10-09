@@ -36,6 +36,16 @@ try {
   for (const p of SITES) assert.equal(auth[`auth:${p}`]?.ok, false, `${p}: lo script ha visto la pagina di accesso`)
   await sleep(1500)
   assert.equal(await registered(), 0, 'finiti i lavori lo script sparisce')
+
+  // "Accedi": la scheda di accesso è un lavoro finché resta aperta (conferma da sola il rientro)
+  const opened = new Promise((r) => browser.once('targetcreated', (t) => r(t)))
+  assert.equal(await dash.evaluate(() => chrome.runtime.sendMessage({ type: 'login', platform: 'vinted' })), true)
+  const login = await (await opened).page()
+  await sleep(2000)
+  assert.equal(await registered(), 1, 'scheda di accesso aperta: script registrato')
+  await login.close()
+  await sleep(1500)
+  assert.equal(await registered(), 0, 'scheda di accesso chiusa: script tolto')
   console.log('e2e ok')
 } finally {
   await browser.close()

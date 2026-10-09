@@ -134,7 +134,8 @@ ogni sito: se compare il menu utente sei connesso, se compare il login no. Se vu
 solo (Impostazioni → "Controlla": ogni 3, 6, 12 o 24 ore; di default mai). Anche ogni compilazione aggiorna lo stato.
 
 Se un sito ti disconnette: notifica di Windows (cliccala per aprire il sito), banner rosso in home e numero
-rosso sull'icona dell'estensione. I selettori usati sono in `loggedIn` / `loggedOut` nel file del sito.
+rosso sull'icona dell'estensione. La pagina di accesso aperta dalla notifica o da **Accedi** segna di nuovo
+*Connesso* da sola appena sei rientrato. I selettori usati sono in `loggedIn` / `loggedOut` nel file del sito.
 "Non verificabile" = la pagina non ha mostrato né il menu utente né il login entro 15 secondi (sito lento,
 captcha, pagina cambiata).
 

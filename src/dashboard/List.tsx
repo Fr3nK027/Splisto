@@ -59,7 +59,9 @@ function AuthPill({ a }: { a?: AuthState }) {
   return <span className={`pill pill-${cls}`}>{text}</span>
 }
 
-const openSite = (p: Platform, login = false) => void chrome.tabs.create({ url: login ? SITES[p].loginUrl : SITES[p].mine.url, active: true })
+// Accesso: lo apre il service worker, che poi segna "Connesso" da solo quando sei rientrato.
+const openSite = (p: Platform, login = false) =>
+  void (login ? chrome.runtime.sendMessage({ type: 'login', platform: p } satisfies Msg) : chrome.tabs.create({ url: SITES[p].mine.url, active: true }))
 
 /** Siti da cui l'annuncio è sparito per 2 importazioni di fila (venduto o tolto?). */
 const goneSites = (l: Listing) => (l.sold ? [] : PLATFORMS.filter((p) => l.status[p]?.state === 'published' && (l.status[p]?.missingCount ?? 0) >= 2))
