@@ -367,6 +367,7 @@ h2.with-icon svg { color: var(--brass); vertical-align: -2px; }
   opacity: 0; transition: opacity var(--t), color var(--t);
 }
 .photo-remove:hover { color: var(--err); }
+.photo-small { position: absolute; left: 12px; top: 12px; font-size: 0.68rem; font-weight: 700; background: rgba(8, 19, 15, 0.88); color: var(--warn); border: 1px solid var(--warn); padding: 1px 7px; border-radius: 4px; }
 .photo:hover .photo-remove, .photo:focus-within .photo-remove { opacity: 1; }
 .photo:focus-visible { outline: 2px solid var(--brass-hi); outline-offset: 2px; }
 .photo-add {
@@ -381,6 +382,7 @@ h2.with-icon svg { color: var(--brass); vertical-align: -2px; }
 .photo-add:hover { color: var(--text); border-color: var(--brass); }
 .photo-add:has(input:focus-visible) { outline: 2px solid var(--brass-hi); outline-offset: 2px; }
 .photos .hint { margin-top: 10px; font-size: 0.8rem; color: var(--faint); }
+.photos .hint.warn-text { color: var(--warn); }
 
 /* AI */
 .tone { display: inline-flex; align-items: center; gap: 8px; }
