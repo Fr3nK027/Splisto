@@ -168,6 +168,7 @@ export type Msg =
   | { type: 'teach'; listingId: string; platform: Platform; key: string; label: string }
   | { type: 'remove'; listingId: string; platforms: Platform[]; thenDelete?: boolean } // toglie dai siti; thenDelete = poi anche da Splisto
   | { type: 'removed'; ok: boolean; message?: string }
+  | { type: 'refetchPhotos'; listingId: string } // riscarica dal sito le foto dell'annuncio, nella versione grande
   | { type: 'statusChanged'; listingId: string }
 
 /** Messaggio dal service worker al content script. */

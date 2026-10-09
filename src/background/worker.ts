@@ -1,6 +1,6 @@
 import contentScript from '../content/index.ts?iife'
 import { SITES } from '../content/selectors'
-import { conditionFrom, editUrlFor, htmlToText, idInUrl, PHOTO_URL, platformOfUrl, sameItem, sameUrl, SITE_URL, withDetails } from '../content/text'
+import { bigPhoto, conditionFrom, editUrlFor, htmlToText, idInUrl, PHOTO_URL, platformOfUrl, sameItem, sameUrl, SITE_URL, withDetails } from '../content/text'
 import { allListings, blobToWire, deleteListing, getListing, newListing, patchListing, saveListing, updateStats, updateStatus } from '../lib/db'
 import { reloadIfStale } from '../lib/fresh'
 import { resizeImage } from '../lib/image'
@@ -31,6 +31,7 @@ interface Job {
   edit?: boolean // fill sulla pagina "Modifica" di un annuncio già pubblicato
   filledPrice?: number | null // valori effettivamente compilati: diventano "sul sito" quando l'utente salva
   filledTitle?: string
+  replacePhotos?: boolean // detail: sostituisce le foto ("Riscarica le foto")
 }
 interface QueueItem {
   listingId: string
@@ -38,6 +39,7 @@ interface QueueItem {
   url?: string
   kind?: 'stats' | 'detail' // schede in background, due alla volta
   edit?: boolean // compilazione: aggiorna un annuncio già pubblicato (url = pagina "Modifica")
+  replacePhotos?: boolean
 }
 interface Queues {
   fill: QueueItem[]
@@ -202,7 +204,7 @@ async function pumpStats(q: Queues) {
   while (q.statsTabs.length < STATS_PARALLEL && q.stats.length) {
     const it = q.stats.shift()!
     try {
-      const id = await openTab(it.url!, { listingId: it.listingId, platform: it.platform, kind: it.kind ?? 'stats', autoClose: true }, false)
+      const id = await openTab(it.url!, { listingId: it.listingId, platform: it.platform, kind: it.kind ?? 'stats', autoClose: true, replacePhotos: it.replacePhotos }, false)
       q.statsTabs.push({ id, at: Date.now() })
     } catch (e) {
       console.warn('[Splisto]', e) // link non valido: salta e passa al prossimo
@@ -335,16 +337,18 @@ async function importTimeout() {
   for (const p of li?.running ?? []) if (!jobs.some(([, j]) => j.kind === 'import' && j.platform === p)) await noteImport(p, 0, 'Interrotta')
 }
 
-/** Scarica una foto dal sito e la ridimensiona come quelle caricate a mano. */
+/** Scarica una foto dal sito (nella versione più grande, se c'è) e la ridimensiona come quelle caricate a mano. */
 async function downloadPhoto(url: string): Promise<Blob | null> {
-  try {
-    if (!PHOTO_URL.test(url)) return null
-    const r = await fetch(url, { credentials: 'omit', signal: AbortSignal.timeout(20_000) })
-    if (!r.ok || !PHOTO_URL.test(r.url) || !r.headers.get('content-type')?.startsWith('image/')) return null
-    return await resizeImage(await r.blob())
-  } catch {
-    return null
+  if (!PHOTO_URL.test(url)) return null
+  for (const u of new Set([bigPhoto(url), url])) {
+    try {
+      const r = await fetch(u, { credentials: 'omit', signal: AbortSignal.timeout(20_000) })
+      if (r.ok && PHOTO_URL.test(r.url) && r.headers.get('content-type')?.startsWith('image/')) return await resizeImage(await r.blob())
+    } catch {
+      // si riprova con il link originale
+    }
   }
+  return null
 }
 
 // Le importazioni (5 siti insieme + quella passiva) leggono tutti gli annunci e poi scrivono:
@@ -476,12 +480,12 @@ const applyImport = (p: Platform, items: ImportedItem[], partial = false) =>
   })
 
 /** Completa un annuncio importato con descrizione, foto, marca e condizione lette dalla sua pagina. */
-async function applyDetail(listingId: string, p: Platform, d: ItemDetail) {
+async function applyDetail(listingId: string, p: Platform, d: ItemDetail, replacePhotos = false) {
   const before = await getListing(listingId)
   if (!before) return
-  // le foto si scaricano prima, fuori dalla transazione; poi si scrive solo ciò che è ancora vuoto
+  // le foto si scaricano prima, fuori dalla transazione; poi si scrive solo ciò che è ancora vuoto (o tutte, se richiesto)
   const blobs: Blob[] = []
-  if (before.photos.length <= 1) {
+  if (replacePhotos || before.photos.length <= 1) {
     for (const u of d.photos) {
       const b = await downloadPhoto(u)
       if (b) blobs.push(b)
@@ -500,7 +504,7 @@ async function applyDetail(listingId: string, p: Platform, d: ItemDetail) {
   await patchListing(listingId, (l) => {
     const first = !l.description.trim() && !!description
     if (first) l.description = description
-    if (blobs.length && l.photos.length <= 1) l.photos = blobs
+    if (blobs.length && (replacePhotos || l.photos.length <= 1)) l.photos = blobs
     if (!l.brand && d.brand) l.brand = d.brand
     const c = first && l.importedFrom ? conditionFrom(d.condition ?? '') : null // la condizione solo la prima volta
     if (c) l.condition = c
@@ -761,7 +765,7 @@ async function handle(msg: Msg, sender: chrome.runtime.MessageSender): Promise<u
     case 'detail': {
       const job = await jobFor(sender)
       if (job?.kind !== 'detail') return false
-      await applyDetail(job.listingId, job.platform, msg.detail)
+      await applyDetail(job.listingId, job.platform, msg.detail, job.replacePhotos)
       await closeJob(tabId!, job) // onRemoved apre la prossima
       void notify(job.listingId)
       return true
@@ -790,6 +794,16 @@ async function handle(msg: Msg, sender: chrome.runtime.MessageSender): Promise<u
       if (tab?.windowId != null) await chrome.windows.update(tab.windowId, { focused: true })
       await chrome.tabs.sendMessage(id, { type: 'teach', key: msg.key, label: msg.label } satisfies TabMsg)
       return true
+    }
+
+    case 'refetchPhotos': {
+      // le foto importate prima della 1.3.1 potevano essere anteprime piccole: si rileggono dalla pagina dell'annuncio
+      const l = await getListing(msg.listingId)
+      const online = (x?: Platform): x is Platform => !!l && !!x && l.status[x]?.state === 'published' && SITE_URL.test(l.status[x]?.url ?? '')
+      const p = [l?.importedFrom, ...PLATFORMS].find(online)
+      if (!l || !p) return false
+      await enqueueStats([{ listingId: l.id, platform: p, url: l.status[p]!.url, kind: 'detail', replacePhotos: true }])
+      return PLATFORM_LABEL[p]
     }
 
     case 'remove': {

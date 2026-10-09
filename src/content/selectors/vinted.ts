@@ -68,11 +68,6 @@ export default {
     buono: 'Buone',
     discreto: 'Discrete',
   } satisfies Record<Condition, string>,
-  // Pacco dal peso (grammi) -> radio del sito: 1 Piccola (busta grande), 2 Media (scatola da scarpe),
-  // 3 Grande (scatola da trasloco), 8 Voluminoso e pesante (oltre 2 kg). Il volume non lo conosciamo: oltre 2 kg = 8.
-  packages: [
-    [1000, '[data-testid="package_type_selector_1--input"]'],
-    [2000, '[data-testid="package_type_selector_2--input"]'],
-    [Infinity, '[data-testid="package_type_selector_8--input"]'],
-  ] as [number, string][],
+  // Pacchi (radio): cambiano con la categoria, si sceglie leggendo quelli mostrati (vedi adapters/vinted.ts)
+  packages: 'input[data-testid^="package_type_selector_"]',
 }

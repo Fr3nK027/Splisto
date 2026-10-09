@@ -56,9 +56,17 @@ export function withDetails(l: { description: string; brand: string; size: strin
   return extra.length ? `${l.description.trim()}\n\n${extra.join('\n')}` : l.description
 }
 
-/** Prima etichetta il cui limite di peso (grammi) contiene il peso dato; altrimenti l'ultima. */
-export function pickBySize(weightG: number, sizes: [maxG: number, label: string][]): string {
-  return (sizes.find(([max]) => weightG <= max) ?? sizes[sizes.length - 1])[1]
+/**
+ * Quale pacco scegliere tra quelli mostrati (in ordine, dal più piccolo). `kg` = portata scritta su ogni opzione,
+ * se c'è (Vinted, elettronica: "5 kg", "10 kg", "20 kg"): la prima che basta. Senza portata (vestiti: piccolo,
+ * medio, grande, voluminoso): fino a 1 kg il primo, fino a 2 kg il secondo, oltre l'ultimo.
+ */
+export function packageIndex(weightG: number, kg: (number | null)[]): number {
+  if (kg.some((k) => k != null)) {
+    const i = kg.findIndex((k) => k != null && k * 1000 >= weightG)
+    return i >= 0 ? i : kg.length - 1
+  }
+  return weightG <= 1000 ? 0 : weightG <= 2000 ? Math.min(1, kg.length - 1) : kg.length - 1
 }
 
 /** Parole che identificano il pulsante finale di pubblicazione: non va MAI cliccato dall'estensione. */
@@ -75,6 +83,23 @@ export const SITE_URL =
   /^https:\/\/(www\.vinted\.it|(?:www|signin)\.ebay\.(?:it|com)|(?:www|areariservata|inserimento)\.subito\.it|(?:www|web|m)\.facebook\.com|(?:www|[a-z]{2})\.wallapop\.com)(\/|$)/i
 /** Server delle foto delle piattaforme (gli unici da cui si scaricano immagini). */
 export const PHOTO_URL = /^https:\/\/([a-z0-9-]+\.)*(vinted\.net|sbito\.it|fbcdn\.net|ebayimg\.com|wallapop\.com)\//i
+
+/**
+ * Stessa foto alla risoluzione più alta che il sito dà (verificato 10/2026): le pagine mostrano anteprime piccole
+ * (Subito 262 px, Wallapop 320-640 px) e riusarle per pubblicare altrove dava foto sgranate.
+ * Vinted ha link firmati: lì l'originale si prende dai dati della pagina (importers.ts).
+ */
+export function bigPhoto(u: string): string {
+  const set = (param: string, value: string) => {
+    const url = new URL(u)
+    url.searchParams.set(param, value)
+    return url.href
+  }
+  if (/^https:\/\/images\.sbito\.it\//.test(u)) return set('rule', 'fullscreen-2x-auto') // fino a 1148x2040
+  if (/^https:\/\/cdn\.wallapop\.com\/images\//.test(u)) return set('pictureSize', 'W1024') // o l'originale, se più piccolo
+  if (/^https:\/\/i\.ebayimg\.com\//.test(u)) return u.replace(/\/s-l\d+\./, '/s-l1600.')
+  return u
+}
 
 /** Piattaforma dal nome host, o null se non è una delle cinque. */
 export function platformOfUrl(url: string): 'vinted' | 'ebay' | 'subito' | 'facebook' | 'wallapop' | null {

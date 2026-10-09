@@ -3,7 +3,7 @@ import { idInUrl, platformOfUrl, sameUrl } from '../content/text.ts'
 import type { ImportedItem, Msg, PlatformStatus } from '../lib/types.ts'
 
 // Comandi che solo la dashboard può dare; gli altri messaggi arrivano dalle schede dei siti.
-const FROM_DASHBOARD = new Set<Msg['type']>(['publish', 'relist', 'refreshStats', 'importAll', 'checkAuth', 'teach', 'login', 'remove'])
+const FROM_DASHBOARD = new Set<Msg['type']>(['publish', 'relist', 'refreshStats', 'importAll', 'checkAuth', 'teach', 'login', 'remove', 'refetchPhotos'])
 
 interface Sender {
   id?: string

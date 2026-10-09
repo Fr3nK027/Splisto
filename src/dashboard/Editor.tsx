@@ -73,6 +73,12 @@ export function Editor({ id }: { id: string }) {
   }, [id])
   useStatusChanged(useCallback((lid: string) => lid === id && void refreshStatus(), [id, refreshStatus]))
 
+  async function refetchPhotos() {
+    if (!confirm('Sostituire le foto con quelle dell’annuncio sul sito, in alta qualità?')) return
+    const site = (await chrome.runtime.sendMessage({ type: 'refetchPhotos', listingId: id } satisfies Msg)) as unknown
+    setNotice(typeof site === 'string' ? `Scarico le foto da ${site}: compaiono qui tra qualche secondo.` : 'Annuncio non trovato online.')
+  }
+
   if (!l) return null
 
   const tone = settings.tone
@@ -223,9 +229,14 @@ export function Editor({ id }: { id: string }) {
       )}
 
       <Photos photos={l.photos} onChange={(photos) => set({ photos })} />
-      {l.photos.length > 0 && (
+      {(l.photos.length > 0 || l.importedFrom) && (
         <div className="under-photos">
-          {aiBtn('photos', 'Controlla foto', async () => ({ text: await checkPhotos(l) }))}
+          {l.importedFrom && published.length > 0 && (
+            <button className="btn-text" onClick={() => void refetchPhotos()} title="Sostituisce le foto con quelle del sito, nella versione più grande">
+              Riscarica foto dal sito
+            </button>
+          )}
+          {l.photos.length > 0 && aiBtn('photos', 'Controlla foto', async () => ({ text: await checkPhotos(l) }))}
           {aiBox('photos')}
         </div>
       )}

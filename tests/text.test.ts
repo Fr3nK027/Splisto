@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { bestMatch, conditionFrom, editUrlFor, idInUrl, parseNumber, facebookDescription, norm, parsePrice, parseVintedAlt, pickBySize, priceText, htmlToText, PHOTO_URL, platformOfUrl, PUBLISH_WORDS, sameItem, SITE_URL, withDetails } from '../src/content/text.ts'
+import { bigPhoto, bestMatch, conditionFrom, editUrlFor, idInUrl, parseNumber, facebookDescription, norm, parsePrice, parseVintedAlt, packageIndex, priceText, htmlToText, PHOTO_URL, platformOfUrl, PUBLISH_WORDS, sameItem, SITE_URL, withDetails } from '../src/content/text.ts'
 
 const pick = (opts: string[], w: string) => bestMatch(opts, (s) => s, w)
 
@@ -34,11 +34,15 @@ test('withDetails', () => {
   assert.equal(withDetails({ description: 'x', brand: '', size: '', color: '' }), 'x')
 })
 
-test('pickBySize', () => {
-  const s: [number, string][] = [[1000, 'Piccolo'], [5000, 'Medio'], [Infinity, 'Grande']]
-  assert.equal(pickBySize(800, s), 'Piccolo')
-  assert.equal(pickBySize(3000, s), 'Medio')
-  assert.equal(pickBySize(9000, s), 'Grande')
+test('packageIndex', () => {
+  const kg = [5, 10, 20] // Vinted, elettronica
+  assert.equal(packageIndex(2500, kg), 0)
+  assert.equal(packageIndex(7000, kg), 1)
+  assert.equal(packageIndex(30000, kg), 2)
+  const none = [null, null, null, null] // vestiti: piccolo, medio, grande, voluminoso
+  assert.equal(packageIndex(800, none), 0)
+  assert.equal(packageIndex(1500, none), 1)
+  assert.equal(packageIndex(9000, none), 3)
 })
 
 test('PUBLISH_WORDS', () => {
@@ -153,4 +157,16 @@ test('parseNumber / idInUrl eBay / entità', () => {
   assert.equal(parseNumber('abc'), null)
   assert.equal(idInUrl('https://www.ebay.it/itm/cover-8001234567890/398366727822'), '398366727822')
   assert.equal(htmlToText('<p>Perch&eacute; &egrave; bello &#xE8; &euro; 5 &amp;lt;</p><table><tr><td>Marca</td><td>Nike</td></tr></table><link rel="x">'), 'Perché è bello è € 5 &lt;\nMarca Nike')
+})
+
+test('bigPhoto: versione grande della stessa foto', () => {
+  assert.equal(
+    bigPhoto('https://images.sbito.it/api/v1/sbt-ads-images-pro/images/1c/1c4b?rule=gallery-mobile-1x-auto'),
+    'https://images.sbito.it/api/v1/sbt-ads-images-pro/images/1c/1c4b?rule=fullscreen-2x-auto',
+  )
+  assert.equal(bigPhoto('https://cdn.wallapop.com/images/13/7d/i3.jpg?pictureSize=W320'), 'https://cdn.wallapop.com/images/13/7d/i3.jpg?pictureSize=W1024')
+  assert.equal(bigPhoto('https://cdn.wallapop.com/images/13/7d/i3.jpg'), 'https://cdn.wallapop.com/images/13/7d/i3.jpg?pictureSize=W1024')
+  assert.equal(bigPhoto('https://i.ebayimg.com/images/g/abc/s-l500.webp'), 'https://i.ebayimg.com/images/g/abc/s-l1600.webp')
+  const fb = 'https://scontent.fbcdn.net/v/t45/1.jpg?stp=dst&oh=x'
+  assert.equal(bigPhoto(fb), fb)
 })

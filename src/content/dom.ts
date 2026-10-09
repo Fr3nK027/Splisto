@@ -93,9 +93,7 @@ export function setText(el: HTMLElement, value: string): boolean {
       el.dispatchEvent(new Event('input', { bubbles: true }))
       el.dispatchEvent(new Event('change', { bubbles: true }))
     }
-    // blur vero: React ascolta "focusout", non un evento "blur" finto (Vinted riformatta il prezzo solo così)
-    if (el.ownerDocument.activeElement === el) el.blur()
-    else el.dispatchEvent(new Event('blur', { bubbles: false }))
+    el.dispatchEvent(new Event('blur', { bubbles: false }))
     return took()
   }
   if (el.isContentEditable || el.ownerDocument.designMode === 'on') {
@@ -290,6 +288,9 @@ export class Form {
     }
     try {
       ok = !!el && setText(el, value)
+      // blur vero (React ascolta "focusout"): Vinted riformatta il prezzo solo così. Non dentro setText, che scrive
+      // anche nei campi di ricerca dei menu, dove il blur chiuderebbe il menu.
+      if (el && el.ownerDocument.activeElement === el) el.blur()
     } catch {
       ok = false
     }
