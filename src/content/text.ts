@@ -65,10 +65,14 @@ export function pickBySize(weightG: number, sizes: [maxG: number, label: string]
 // Anche i pulsanti finali delle pagine di modifica: "Salva" (Vinted), "Aggiorna" (Facebook), "Pubblica annuncio" (Subito).
 // Comprende le forme verbali ("Pubblicalo", "Pubblicare"), lo spagnolo di Wallapop ("Publicar", "Subir producto") e l'inglese.
 export const PUBLISH_WORDS =
-  /\b(pubblic\w*|publicar\w*|publish\w*|metti in vendita|mettilo in vendita|metti online|carica|caricare|carica annuncio|carica articolo|inserisci annuncio|invia annuncio|vendi ora|subir\w*|list it|post|salva|salva modifiche|aggiorna|aggiorna annuncio|aggiorna inserzione|invia modifiche|conferma modifiche|rivedi inserzione|save|update|revise)\b/i
+  /\b(pubblic\w*|publicar\w*|publish\w*|metti in vendita|mettilo in vendita|metti online|carica|caricare|carica annuncio|carica articolo|inserisci annuncio|invia annuncio|vendi ora|subir\w*|upload|submit|list it|post|salva|salva modifiche|aggiorna|aggiorna annuncio|aggiorna inserzione|invia modifiche|conferma modifiche|rivedi inserzione|save|update|revise)\b/i
 
-/** Sito della piattaforma (https, dominio esatto o sottodominio): l'estensione apre e legge solo questi. */
-export const SITE_URL = /^https:\/\/([a-z0-9-]+\.)*(vinted\.it|ebay\.it|ebay\.com|subito\.it|facebook\.com|wallapop\.com)(\/|$)/i
+/**
+ * Pagine dei siti che l'estensione apre e salva come link: solo questi host, non qualsiasi sottodominio,
+ * così un link di reindirizzamento (rover.ebay.com, l.facebook.com) in un backup non apre altri siti.
+ */
+export const SITE_URL =
+  /^https:\/\/(www\.vinted\.it|www\.ebay\.(?:it|com)|(?:www|areariservata|inserimento)\.subito\.it|(?:www|web|m)\.facebook\.com|(?:www|[a-z]{2})\.wallapop\.com)(\/|$)/i
 /** Server delle foto delle piattaforme (gli unici da cui si scaricano immagini). */
 export const PHOTO_URL = /^https:\/\/([a-z0-9-]+\.)*(vinted\.net|sbito\.it|fbcdn\.net|ebayimg\.com|wallapop\.com)\//i
 

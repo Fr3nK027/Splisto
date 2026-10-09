@@ -194,12 +194,16 @@ export async function readMine(p: Platform): Promise<{ items: ImportedItem[]; pa
 /** Lettura singola, senza scorrere (per la pagina aperta a mano dall'utente). */
 export const readNow = (p: Platform) => READERS[p]()
 
-/** Id del tuo profilo Vinted: cookie braze_external_id ("<id>:...") o dati della pagina ("userId"). Verificato 10/2026. */
+/**
+ * Id del tuo profilo Vinted: cookie braze_external_id ("<id>:...") o dati della pagina ("userId").
+ * Il cookie manca se rifiuti i cookie di marketing: allora vale "userId" solo se nella pagina è uno solo
+ * (home e profilo mostrano solo il tuo, verificato 10/2026); più id diversi = non si sa quale è il tuo.
+ */
 function ownVintedId(): string | undefined {
-  return (
-    document.cookie.match(/(?:^|;\s*)braze_external_id=(\d+)/)?.[1] ??
-    [...document.scripts].map((s) => s.textContent?.match(/\\?"userId\\?":\\?"?(\d+)/)?.[1]).find(Boolean)
-  )
+  const cookie = document.cookie.match(/(?:^|;\s*)braze_external_id=(\d+)/)?.[1]
+  if (cookie) return cookie
+  const ids = new Set([...document.scripts].flatMap((s) => [...(s.textContent ?? '').matchAll(/\\?"userId\\?":\\?"?(\d+)/g)].map((m) => m[1])))
+  return ids.size === 1 ? [...ids][0] : undefined
 }
 
 const here = () => location.origin + location.pathname

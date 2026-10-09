@@ -4,11 +4,13 @@ import type { Locator } from '../dom'
 /*
  * EBAY.IT — pagina "Modifica" (/lstng?mode=ReviseItem, poi /lstng?draftId=…&mode=ReviseItem) verificata 10/2026:
  * input[name=title], input[name=price] ("499,99"), descrizione in iframe[title=Descrizione] con un div contenteditable.
- * Il modulo nuovo usa la stessa pagina /lstng; il passo /sl/prelist non è verificato.
- * Il flusso eBay ha due pagine:
- *  1. /sl/prelist/...  -> campo "cosa vendi": l'estensione scrive il titolo e si ferma. Tu scegli
- *     categoria e condizione e prosegui.
- *  2. /lstng?...       -> modulo completo: l'estensione lo compila da sola quando ci arrivi.
+ * Modulo nuovo verificato 10/2026 (/lstng?draftId=…&mode=AddItem): stessi campi; specifiche come
+ * <button name="attributes.Marca|Taglia|Colore"> che aprono un menu con ricerca; niente campo peso
+ * (c'è solo "Dimensioni del pacco", un preset tipo "Pacco fino a 2 kg").
+ * Il flusso eBay (verificato 10/2026):
+ *  1. /sl/prelist/suggest  -> campo "cosa vendi": l'estensione scrive il titolo e si ferma.
+ *  2. /sl/prelist/identify -> categoria, "Trova una corrispondenza", condizione: li scegli tu.
+ *  3. /lstng?...           -> modulo completo: l'estensione lo compila da sola quando ci arrivi.
  * Verifica: F12 > Ctrl+Maiusc+C sul campo; preferisci name/aria-label. La descrizione di solito è un
  * editor dentro un <iframe>: seleziona l'iframe e annota title/id.
  */
@@ -18,6 +20,7 @@ export default {
   loginUrl: 'https://signin.ebay.it/ws/eBayISAPI.dll?SignIn&ru=https%3A%2F%2Fwww.ebay.it%2F',
   formUrl: ['/sl/prelist', '/lstng', '/sl/list'],
   prelistUrl: ['/sl/prelist'],
+  suggestUrl: ['/sl/prelist/suggest'],
   // Il controllo accessi usa la home: la pagina "vendi" mostra il campo di ricerca anche a chi eBay riconosce
   // ma non ha fatto l'accesso (verificato 10/2026). Da non loggato la home mostra "Ciao! Accedi o registrati".
   authUrl: 'https://www.ebay.it/',
@@ -58,10 +61,10 @@ export default {
     description: ['iframe[title*="escrizione"]', 'iframe[id*="rte"]', 'textarea[name="description"]', '[contenteditable="true"][aria-label*="escrizione"]'],
     condition: ['select[name="condition"]', { label: 'Condizione' }],
     // Specifiche oggetto: di solito pulsanti che aprono un menu con ricerca.
-    brand: [{ label: 'Marca' }],
-    size: [{ label: 'Taglia' }],
-    color: [{ label: 'Colore' }],
-    weight: ['input[name="majorWeight"]', { label: 'Peso' }],
+    brand: ['button[name="attributes.Marca"]', { label: 'Marca' }],
+    size: ['button[name="attributes.Taglia"]', { label: 'Taglia' }], // senza aria-label: solo il name
+    color: ['button[name="attributes.Colore"]', { label: 'Colore' }],
+    weight: ['input[name="majorWeight"]', { label: 'Peso' }], // solo nel modulo «avanzato»
   } satisfies Record<string, Locator[]>,
   conditions: {
     nuovo_cartellino: 'Nuovo con cartellino',

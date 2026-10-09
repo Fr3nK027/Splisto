@@ -42,7 +42,7 @@ test('pickBySize', () => {
 })
 
 test('PUBLISH_WORDS', () => {
-  for (const t of ['Pubblica', 'Metti in vendita', 'Pubblica annuncio', 'Carica', 'Pubblicalo', 'Pubblicare ora', 'Publicar', 'Subir producto', 'Publish']) assert.match(t, PUBLISH_WORDS)
+  for (const t of ['Pubblica', 'Metti in vendita', 'Pubblica annuncio', 'Carica', 'Pubblicalo', 'Pubblicare ora', 'Publicar', 'Subir producto', 'Publish', 'Upload', 'Submit']) assert.match(t, PUBLISH_WORDS)
   for (const t of ['Salva', 'Salva modifiche', 'Aggiorna', 'Pubblica annuncio']) assert.match(t, PUBLISH_WORDS)
   for (const t of ['Piccolo', 'Donna', 'Nuovo con cartellino', 'Usato - Buone condizioni', 'Caricabatterie', 'Salvataggi', 'Aggiornamento', 'Poster']) assert.doesNotMatch(t, PUBLISH_WORDS)
 })
@@ -114,6 +114,8 @@ test('SITE_URL / PHOTO_URL / platformOfUrl', () => {
   for (const u of ['https://www.vinted.it/items/1', 'https://areariservata.subito.it/annunci', 'https://it.wallapop.com/item/x', 'https://www.facebook.com/marketplace/item/1/'])
     assert.match(u, SITE_URL)
   for (const u of ['https://evil.example/ebay.it/itm/1234567', 'http://www.vinted.it/', 'https://vinted.it.evil.com/', 'javascript:alert(1)']) assert.doesNotMatch(u, SITE_URL)
+  for (const u of ['https://rover.ebay.com/rover/1?mpre=https://evil.example', 'https://l.facebook.com/l.php?u=https://evil.example']) assert.doesNotMatch(u, SITE_URL) // reindirizzamenti
+  for (const u of ['https://www.ebay.it/itm/398366727822', 'https://www.ebay.com/mys/active', 'https://inserimento.subito.it/modifica?id=x']) assert.match(u, SITE_URL)
   assert.match('https://images1.vinted.net/t/a/310x430/1.webp?s=x', PHOTO_URL)
   assert.match('https://scontent-mxp1-1.xx.fbcdn.net/v/x.jpg', PHOTO_URL)
   assert.doesNotMatch('https://evil.example/fbcdn.net/x.jpg', PHOTO_URL)

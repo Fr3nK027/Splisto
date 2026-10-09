@@ -1,5 +1,5 @@
 import { SITES } from '../content/selectors'
-import { conditionFrom, editUrlFor, htmlToText, idInUrl, PHOTO_URL, sameItem, sameUrl, SITE_URL, withDetails } from '../content/text'
+import { conditionFrom, editUrlFor, htmlToText, idInUrl, PHOTO_URL, platformOfUrl, sameItem, sameUrl, SITE_URL, withDetails } from '../content/text'
 import { allListings, blobToWire, getListing, newListing, patchListing, saveListing, updateStats, updateStatus } from '../lib/db'
 import { reloadIfStale } from '../lib/fresh'
 import { resizeImage } from '../lib/image'
@@ -49,6 +49,11 @@ const key = (tabId: number) => `job:${tabId}`
 async function getJob(tabId: number | undefined): Promise<Job | undefined> {
   if (tabId == null) return
   return (await chrome.storage.session.get(key(tabId)))[key(tabId)] as Job | undefined
+}
+/** Job della scheda che scrive, solo se la pagina è del sito del job: una scheda finita su un altro sito non parla per lui. */
+async function jobFor(sender: chrome.runtime.MessageSender): Promise<Job | undefined> {
+  const job = await getJob(sender.tab?.id)
+  return job && platformOfUrl(sender.url ?? '') === job.platform ? job : undefined
 }
 const setJob = (tabId: number, job: Job) => chrome.storage.session.set({ [key(tabId)]: job })
 const dropJob = (tabId: number) => chrome.storage.session.remove(key(tabId))
@@ -627,17 +632,14 @@ async function handle(msg: Msg, sender: chrome.runtime.MessageSender): Promise<u
         job = { listingId: hit.id, platform: msg.platform, kind: 'stats', url: sender.url }
         await setJob(tabId, job)
       }
-      if (job.kind === 'stats') return { kind: 'stats' } satisfies JobReply
-      if (job.kind === 'auth') return { kind: 'auth' } satisfies JobReply
-      if (job.kind === 'import') return { kind: 'import' } satisfies JobReply
-      if (job.kind === 'detail') return { kind: 'detail' } satisfies JobReply
+      if (job.kind !== 'fill') return { kind: job.kind } satisfies JobReply
       const l = await getListing(job.listingId)
       if (!l) return null
       return { kind: job.phase ?? 'fill', listing: await jobListing(l, job.platform), edit: job.edit, url: job.url } satisfies JobReply
     }
 
     case 'result': {
-      const job = await getJob(tabId)
+      const job = await jobFor(sender)
       if (!job || tabId == null) return false
       // accesso: lo decidono solo le compilazioni (dettagli e statistiche leggono anche pagine pubbliche)
       if (job.kind === 'fill' && msg.state === 'login') await setAuth(job.platform, false)
@@ -683,7 +685,7 @@ async function handle(msg: Msg, sender: chrome.runtime.MessageSender): Promise<u
     }
 
     case 'published': {
-      const job = await getJob(tabId)
+      const job = await jobFor(sender)
       if (!job || job.kind !== 'fill') return false
       // l'utente ha salvato sul sito quello che l'estensione ha compilato: diventa il "prezzo sul sito"
       // (solo i valori compilati davvero; la prossima importazione corregge se sul sito sono stati cambiati a mano)
@@ -703,7 +705,7 @@ async function handle(msg: Msg, sender: chrome.runtime.MessageSender): Promise<u
     }
 
     case 'stats': {
-      const job = await getJob(tabId)
+      const job = await jobFor(sender)
       if (!job || job.kind !== 'stats') return false
       await updateStats(job.listingId, job.platform, { views: msg.views, likes: msg.likes })
       await dropJob(tabId!)
@@ -732,7 +734,7 @@ async function handle(msg: Msg, sender: chrome.runtime.MessageSender): Promise<u
 
     case 'auth': {
       await setAuth(msg.platform, msg.ok, Array.isArray(msg.broken) ? msg.broken.map(String).slice(0, 10) : undefined)
-      const job = await getJob(tabId)
+      const job = await jobFor(sender)
       if (job?.kind === 'auth') {
         await dropJob(tabId!)
         if (job.autoClose) await chrome.tabs.remove(tabId!).catch(() => {})
@@ -741,7 +743,7 @@ async function handle(msg: Msg, sender: chrome.runtime.MessageSender): Promise<u
     }
 
     case 'imported': {
-      const job = await getJob(tabId)
+      const job = await jobFor(sender)
       const created = msg.error ? 0 : await applyImport(msg.platform, msg.items, job?.kind === 'import', msg.partial)
       if (job?.kind === 'import') {
         await noteImport(msg.platform, created, msg.error)
@@ -753,7 +755,7 @@ async function handle(msg: Msg, sender: chrome.runtime.MessageSender): Promise<u
     }
 
     case 'detail': {
-      const job = await getJob(tabId)
+      const job = await jobFor(sender)
       if (job?.kind !== 'detail') return false
       await applyDetail(job.listingId, job.platform, msg.detail)
       await dropJob(tabId!)

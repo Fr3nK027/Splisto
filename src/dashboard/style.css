@@ -173,7 +173,6 @@ textarea { resize: vertical; min-height: 140px; line-height: 1.55; }
 .grid .field:last-child, .grid .field:nth-last-child(2) { margin-bottom: 4px; }
 .hint { color: var(--muted); font-size: 0.86rem; margin: 0; }
 .error-text { color: var(--err); font-size: 0.86rem; margin: 0; }
-.muted { color: var(--muted); }
 .warn-text { color: var(--warn); }
 
 /* Pannello piattaforme */
@@ -248,16 +247,6 @@ textarea { resize: vertical; min-height: 140px; line-height: 1.55; }
 .dup-intro .hint { max-width: 34ch; }
 .dup-line { display: flex; align-items: center; gap: 14px; min-width: 0; }
 .dup-label { flex: 0 0 22px; font-family: var(--display); font-weight: 700; color: var(--muted); font-size: 0.9rem; }
-.seg { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; padding: 4px; background: var(--sunken); border-radius: 14px; flex: 1; min-width: 0; }
-.seg-btn {
-  position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-width: 0; height: 38px; padding: 0 10px;
-  border: 0; border-radius: 10px; background: none; cursor: pointer; font-weight: 600; font-size: 0.86rem; color: var(--muted);
-  transition: background var(--t), color var(--t), box-shadow var(--t);
-}
-.seg-btn:hover { color: var(--text); }
-.seg-btn[aria-checked='true'] { background: var(--surface); color: var(--text); box-shadow: var(--shadow-sm), 0 0 0 1px var(--border); }
-.seg-btn .logo { filter: grayscale(1); opacity: 0.6; transition: filter var(--t), opacity var(--t); }
-.seg-btn[aria-checked='true'] .logo, .seg-btn:hover .logo { filter: none; opacity: 1; }
 .seg-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .seg-count { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: var(--accent); color: var(--accent-text); font-size: 0.72rem; font-weight: 750; display: inline-grid; place-items: center; font-variant-numeric: tabular-nums; }
 .dup-targets { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; flex: 1; min-width: 0; }

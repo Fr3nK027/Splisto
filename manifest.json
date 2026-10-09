@@ -53,6 +53,9 @@
         "https://www.facebook.com/*",
         "https://*.wallapop.com/*"
       ],
+      "exclude_matches": [
+        "https://www.facebook.com/messages/*"
+      ],
       "js": [
         "src/content/index.ts"
       ],
