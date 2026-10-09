@@ -1,0 +1,62 @@
+{
+  "manifest_version": 3,
+  "name": "Splisto",
+  "short_name": "Splisto",
+  "version": "1.0.0",
+  "description": "Scrivi l'annuncio una volta, compilalo su Vinted, eBay, Subito, Facebook Marketplace e Wallapop.",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "action": {
+    "default_title": "Apri Splisto",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png"
+    }
+  },
+  "options_page": "src/dashboard/index.html",
+  "background": {
+    "service_worker": "src/background/index.ts",
+    "type": "module"
+  },
+  "permissions": [
+    "storage",
+    "unlimitedStorage",
+    "alarms",
+    "notifications"
+  ],
+  "host_permissions": [
+    "https://api.anthropic.com/*",
+    "https://*.vinted.net/*",
+    "https://images.sbito.it/*",
+    "https://*.fbcdn.net/*",
+    "https://*.ebayimg.com/*",
+    "https://itm.ebaydesc.com/*",
+    "https://*.wallapop.com/*"
+  ],
+  "optional_host_permissions": [
+    "https://*/*",
+    "http://localhost/*",
+    "http://127.0.0.1/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.vinted.it/*",
+        "https://*.ebay.it/*",
+        "https://*.ebay.com/*",
+        "https://*.subito.it/*",
+        "https://www.facebook.com/*",
+        "https://*.wallapop.com/*"
+      ],
+      "js": [
+        "src/content/index.ts"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}
