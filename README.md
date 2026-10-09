@@ -7,8 +7,9 @@ Estensione per Chrome ed Edge (Manifest V3) per scrivere un annuncio una volta s
 e carica le foto. **Il pulsante finale "Pubblica" lo premi sempre tu**: l'estensione non lo clicca mai
 (c'è anche un blocco esplicito nel codice, vedi `PUBLISH_WORDS` in `src/content/text.ts`).
 
-**Spenta finché non la usi.** Nessuno script gira sulle pagine che apri tu: il codice per i siti entra solo nelle
-schede aperte dall'estensione (pubblica, importa, verifica, statistiche) e sparisce quando le chiudi. Il controllo
+**Spenta finché non la usi.** Il codice per i siti esiste solo mentre l'estensione sta lavorando (pubblica, importa,
+verifica, statistiche): lavora nelle schede che apre lei e, nelle altre pagine dei cinque siti, si ferma appena
+vede che non c'è niente da fare. Finito il lavoro sparisce: navigando normalmente non gira nulla. Il controllo
 periodico in background è spento di default: lo accendi in Impostazioni.
 
 Tutto resta sul tuo PC: annunci e foto in IndexedDB, impostazioni in `chrome.storage.local`.

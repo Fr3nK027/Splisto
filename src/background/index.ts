@@ -17,7 +17,7 @@ import { PLATFORMS, type AuthState, type ImportedItem, type ItemDetail, type Job
  *  - import: legge la pagina "i miei annunci" del sito (listingId vuoto);
  *  - detail: legge descrizione, foto e statistiche di un annuncio appena importato.
  * Tutto in storage.session perché il service worker può essere fermato in qualsiasi momento.
- * Lo script dei siti gira solo nelle schede con un job (vedi tabs.onUpdated): il resto della navigazione non lo vede.
+ * Lo script dei siti è registrato solo finché c'è almeno un job (syncScript): senza lavori in corso nessuna pagina lo riceve.
  */
 interface Job {
   listingId: string
@@ -59,8 +59,39 @@ async function jobFor(sender: chrome.runtime.MessageSender): Promise<Job | undef
   const job = await getJob(sender.tab?.id)
   return job && platformOfUrl(sender.url ?? '') === job.platform ? job : undefined
 }
-const setJob = (tabId: number, job: Job) => chrome.storage.session.set({ [key(tabId)]: job })
-const dropJob = (tabId: number) => chrome.storage.session.remove(key(tabId))
+async function setJob(tabId: number, job: Job) {
+  await chrome.storage.session.set({ [key(tabId)]: job })
+  await syncScript()
+}
+async function dropJob(tabId: number) {
+  await chrome.storage.session.remove(key(tabId))
+  await syncScript()
+}
+
+// Siti in cui serve lo script (stessi host del manifest). Niente Messenger: lì non c'è mai un job.
+const SITE_MATCHES = ['https://www.vinted.it/*', 'https://*.ebay.it/*', 'https://*.ebay.com/*', 'https://*.subito.it/*', 'https://www.facebook.com/*', 'https://*.wallapop.com/*']
+const SCRIPT_ID = 'splisto-sites'
+let scriptChain: Promise<unknown> = Promise.resolve()
+
+/**
+ * Registra lo script dei siti quando c'è un job e lo toglie quando non ce ne sono più: mentre non lavori, nessuna
+ * pagina lo riceve e il service worker non si sveglia. Nelle pagine aperte a mano durante un lavoro lo script chiede
+ * se c'è un job per la sua scheda e, se no, si ferma subito. In serie: register/unregister non si accavallano.
+ */
+function syncScript(): Promise<unknown> {
+  const run = scriptChain.then(async () => {
+    const need = (await allJobs()).length > 0
+    const has = (await chrome.scripting.getRegisteredContentScripts({ ids: [SCRIPT_ID] })).length > 0
+    if (need && !has) {
+      await chrome.scripting.registerContentScripts([
+        { id: SCRIPT_ID, js: [contentScript], matches: SITE_MATCHES, excludeMatches: ['https://www.facebook.com/messages/*'], runAt: 'document_idle', persistAcrossSessions: false },
+      ])
+    }
+    if (!need && has) await chrome.scripting.unregisterContentScripts({ ids: [SCRIPT_ID] })
+  })
+  scriptChain = run.catch((e) => console.warn('[Splisto] script dei siti:', e))
+  return scriptChain
+}
 
 /** Fine del job: lo toglie e chiude la scheda se l'aveva aperta l'estensione in background. */
 async function closeJob(tabId: number, job: Job) {
@@ -497,6 +528,7 @@ async function resetStuck() {
 
 /** Avvio del browser o dell'estensione: ripulisce ciò che è rimasto a metà e riprogramma i controlli. */
 async function boot() {
+  await syncScript()
   await resetStuck()
   await scheduleAuth()
   await authTimeout()
@@ -544,14 +576,6 @@ chrome.alarms.onAlarm.addListener((a) => {
   if (one && PLATFORMS.includes(one)) void importAll([one])
   if (a.name === 'import-timeout') void importTimeout()
   if (a.name === 'auth-timeout') void authTimeout()
-})
-
-// Ogni pagina caricata in una scheda aperta da Splisto riceve lo script (anche dopo login e redirect).
-chrome.tabs.onUpdated.addListener((tabId, info) => {
-  if (info.status !== 'complete') return
-  void getJob(tabId).then(
-    (job) => job && chrome.scripting.executeScript({ target: { tabId }, files: [contentScript] }).catch(() => {}), // about:blank, pagina di errore
-  )
 })
 
 chrome.tabs.onRemoved.addListener((tabId) => {
