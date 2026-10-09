@@ -7,7 +7,7 @@ import { resizeImage } from '../lib/image'
 import { categoryFor, PLATFORM_LABEL, sitePriceFor, titleFor } from '../lib/platforms'
 import { getSettings } from '../lib/settings'
 import { allowed, missingFromSite, sameRemote } from './rules'
-import { PLATFORMS, type AuthState, type ImportedItem, type ItemDetail, type JobListing, type LastImport, type JobReply, type Listing, type Msg, type Platform, type TabMsg } from '../lib/types'
+import { PLATFORMS, type AuthState, type ImportedItem, type ItemDetail, type JobListing, type LastImport, type JobReply, type Listing, type Msg, type Platform, type StatusState, type TabMsg } from '../lib/types'
 
 /*
  * Job = "cosa deve fare la scheda X":
@@ -45,6 +45,8 @@ interface Queues {
 }
 
 const STATS_PARALLEL = 2
+/** Esiti che una scheda può mandare con 'result' ("pubblicato" e "rimosso" li decide solo il service worker). */
+const TAB_STATES = new Set<StatusState>(['opening', 'filled', 'incomplete', 'login', 'error'])
 const STATS_TIMEOUT = 45_000
 const key = (tabId: number) => `job:${tabId}`
 
@@ -177,6 +179,13 @@ async function pumpStats(q: Queues) {
   if (q.statsTabs.length) await chrome.alarms.create('stats-watchdog', { periodInMinutes: 0.5 })
   else await chrome.alarms.clear('stats-watchdog')
 }
+
+/** Mette in coda letture di statistiche/dettagli (una sola volta per link) e apre le prime schede. */
+const enqueueStats = (items: QueueItem[]) =>
+  withQueues((q) => {
+    q.stats.push(...items.filter((it) => !q.stats.some((x) => x.url === it.url)))
+    return pumpStats(q)
+  })
 
 async function jobListing(l: Listing, p: Platform): Promise<JobListing> {
   const { footers } = await getSettings()
@@ -419,12 +428,7 @@ const applyImport = (p: Platform, items: ImportedItem[], partial = false) =>
         2,
       )
     }
-    if (details.length) {
-      await withQueues((q) => {
-        q.stats.push(...details.filter((d) => !q.stats.some((x) => x.url === d.url)))
-        return pumpStats(q)
-      })
-    }
+    if (details.length) await enqueueStats(details)
     if (created) {
       toast(
         `import:${p}:${Date.now()}`,
@@ -629,7 +633,7 @@ async function handle(msg: Msg, sender: chrome.runtime.MessageSender): Promise<u
 
     case 'result': {
       const job = await jobFor(sender)
-      if (!job || tabId == null) return false
+      if (!job || tabId == null || !TAB_STATES.has(msg.state)) return false
       // accesso: lo decidono solo le compilazioni (dettagli e statistiche leggono anche pagine pubbliche)
       if (job.kind === 'fill' && msg.state === 'login') await setAuth(job.platform, false)
       if (job.kind === 'fill' && (msg.state === 'filled' || msg.state === 'incomplete')) await setAuth(job.platform, true)
@@ -638,18 +642,9 @@ async function handle(msg: Msg, sender: chrome.runtime.MessageSender): Promise<u
         await closeJob(tabId, job)
         return true
       }
-      if (job.edit) {
-        await updateStatus(job.listingId, job.platform, {
-          edit: { state: msg.state, missing: msg.missing ?? [], missingKeys: msg.missingKeys ?? [], message: msg.message, at: Date.now() },
-        })
-      } else {
-        await updateStatus(job.listingId, job.platform, {
-          state: msg.state,
-          missing: msg.missing ?? [],
-          missingKeys: msg.missingKeys ?? [],
-          message: msg.message,
-        })
-      }
+      const r = { state: msg.state, missing: msg.missing ?? [], missingKeys: msg.missingKeys ?? [], message: msg.message }
+      // pagina "Modifica": l'esito va in edit, lo stato resta "pubblicato"
+      await updateStatus(job.listingId, job.platform, job.edit ? { edit: { ...r, at: Date.now() } } : r)
       // Compilato (o errore): la scheda resta in attesa della pubblicazione per salvare il link, senza ricompilare.
       if (!msg.keepJob && (msg.state === 'filled' || msg.state === 'incomplete' || msg.state === 'error')) {
         const l = await getListing(job.listingId)
@@ -712,10 +707,7 @@ async function handle(msg: Msg, sender: chrome.runtime.MessageSender): Promise<u
               .filter(([p, s]) => s?.state === 'published' && s.url && (s.statsUrl || p === 'ebay' || p === 'wallapop'))
               .map(([p, s]) => ({ listingId: l.id, platform: p as Platform, url: s!.statsUrl ?? s!.url })),
       )
-      await withQueues((q) => {
-        q.stats.push(...items.filter((it) => !q.stats.some((x) => x.url === it.url)))
-        return pumpStats(q)
-      })
+      await enqueueStats(items)
       return true
     }
 
