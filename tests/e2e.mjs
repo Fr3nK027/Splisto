@@ -17,6 +17,29 @@ const browser = await puppeteer.launch({
 })
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 const SITES = ['vinted', 'ebay', 'subito', 'facebook', 'wallapop']
+// pagina "Vinted" finta per l'eliminazione: "Cancella" apre la conferma, la conferma porta al profilo
+const ITEM = `<!doctype html><body>
+<button data-testid="item-delete-button">Cancella</button>
+<div id="modal" hidden><button data-testid="item-delete-confirmation-button">Conferma</button></div>
+<script>
+document.querySelector('[data-testid="item-delete-button"]').onclick = () => { document.getElementById('modal').hidden = false }
+document.querySelector('[data-testid="item-delete-confirmation-button"]').onclick = () => { location.href = '/member/1' }
+</script></body>`
+const idb = (page, op, value) =>
+  page.evaluate(
+    (op, value) =>
+      new Promise((ok, ko) => {
+        const r = indexedDB.open('multipost', 1)
+        r.onsuccess = () => {
+          const tx = r.result.transaction('listings', 'readwrite')
+          const q = op === 'put' ? tx.objectStore('listings').put(value) : tx.objectStore('listings').get(value)
+          tx.oncomplete = () => ok(q.result ?? null)
+          tx.onerror = ko
+        }
+      }),
+    op,
+    value,
+  )
 try {
   const sw = await browser.waitForTarget((t) => t.type() === 'service_worker', { timeout: 20_000 })
   const dash = await browser.newPage()
@@ -46,6 +69,24 @@ try {
   await login.close()
   await sleep(1500)
   assert.equal(await registered(), 0, 'scheda di accesso chiusa: script tolto')
+
+  // Eliminazione: annuncio online su Vinted, eliminato in Splisto. La pagina del sito è finta (la rete non la vede).
+  await idb(dash, 'put', { id: 'e2e', title: 'Prova', updatedAt: Date.now(), deleting: true, status: { vinted: { state: 'published', url: 'https://www.vinted.it/items/1-prova' } } })
+  const site = await browser.newPage()
+  await site.setRequestInterception(true)
+  site.on('request', (r) => (r.url().startsWith('https://www.vinted.it/') ? r.respond({ status: 200, contentType: 'text/html', body: r.url().includes('/items/') ? ITEM : '<body>profilo</body>' }) : r.continue()))
+  await site.goto('https://www.vinted.it/start')
+  const worker = await sw.worker()
+  const tabId = await worker.evaluate(async () => (await chrome.tabs.query({ url: 'https://www.vinted.it/start' }))[0].id)
+  await worker.evaluate((id) => chrome.storage.session.set({ [`job:${id}`]: { listingId: 'e2e', platform: 'vinted', kind: 'remove', autoClose: true } }), tabId)
+  await dash.evaluate(() => chrome.runtime.sendMessage({ type: 'login', platform: 'ebay' })) // un lavoro qualsiasi registra lo script
+  await sleep(1500)
+  const closed = new Promise((r) => site.once('close', r))
+  await site.goto('https://www.vinted.it/items/1-prova')
+  await Promise.race([closed, sleep(20_000)])
+  await sleep(1500)
+  assert.equal(site.isClosed(), true, 'eliminato dal sito: scheda chiusa')
+  assert.equal(await idb(dash, 'get', 'e2e'), null, 'eliminato dal sito: tolto anche da Splisto')
   console.log('e2e ok')
 } finally {
   await browser.close()
