@@ -152,7 +152,8 @@ button { -webkit-tap-highlight-color: transparent; }
 .icon-btn.ghost.danger:hover { color: var(--err); background: var(--err-soft); }
 
 /* Campi */
-input:not([type='checkbox']):not([type='radio']), textarea, select {
+/* :where = specificità zero: le regole dei componenti (.fee-row input, .status-actions input…) vincono senza !important */
+:where(input:not([type='checkbox']):not([type='radio'])), textarea, select {
   width: 100%; min-width: 0;
   background: var(--field); border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
   padding: 10px 13px; transition: border-color var(--t), box-shadow var(--t), background var(--t);
@@ -397,7 +398,7 @@ textarea { resize: vertical; min-height: 140px; line-height: 1.55; }
 /* Editor */
 .sheet { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 20px 22px 6px; margin-bottom: 18px; }
 .sheet-title { font-size: 1.05rem; margin-bottom: 14px; }
-.title-input { font-family: var(--display); font-size: 1.45rem !important; font-weight: 650; letter-spacing: -0.02em; padding: 10px 14px !important; }
+.title-input { font-family: var(--display); font-size: 1.45rem; font-weight: 650; letter-spacing: -0.02em; padding: 10px 14px; }
 .per-platform { margin: 4px 0 22px; }
 .per-platform summary { cursor: pointer; font-weight: 650; font-size: 0.92rem; padding: 8px 2px; color: var(--muted); transition: color var(--t); list-style-position: inside; }
 .per-platform summary::marker { color: var(--accent); }
@@ -476,7 +477,7 @@ textarea { resize: vertical; min-height: 140px; line-height: 1.55; }
 /* Impostazioni */
 .card { border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px 22px; margin: 18px 0; background: var(--surface); box-shadow: var(--shadow-sm); }
 .card h2 { font-size: 1.15rem; }
-.card .hint { margin-bottom: 12px; max-width: 72ch; }
+.card p.hint { margin-bottom: 12px; max-width: 72ch; }
 .page > h1 { margin-bottom: 8px; }
 .inline-form { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
 .inline-form input { flex: 1; min-width: 200px; }
@@ -534,7 +535,7 @@ textarea { resize: vertical; min-height: 140px; line-height: 1.55; }
   .dock-foot .hint { flex-basis: 100%; }
   .dock-foot > button { flex: 1 1 auto; }
   .sheet, .card { padding-left: 16px; padding-right: 16px; }
-  .title-input { font-size: 1.2rem !important; }
+  .title-input { font-size: 1.2rem; }
   .photo:first-child { grid-column: span 2; grid-row: span 2; }
   .fee-row { grid-template-columns: 1fr 1fr; }
   .fee-row > span { grid-column: 1 / -1; }

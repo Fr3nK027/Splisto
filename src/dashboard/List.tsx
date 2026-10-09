@@ -316,9 +316,11 @@ function Sync({ items, onNote, onReload }: { items: Listing[]; onNote: (s: strin
         <p className="hint" aria-live="polite">
           {found.length
             ? `${ready.length} ${ready.length === 1 ? 'annuncio' : 'annunci'} da completare · ${forms} ${forms === 1 ? 'modulo' : 'moduli'}${waiting ? ` · ${waiting} in lettura` : ''}${empty ? ` · ${empty} senza descrizione (aprili e completali)` : ''}.`
-            : targets.length
-              ? 'Tutto sincronizzato. Premi lo stesso per rileggere i siti e trovare annunci nuovi.'
-              : 'Scegli almeno un sito.'}{' '}
+            : !targets.length
+              ? 'Scegli almeno un sito.'
+              : items.length
+                ? 'Tutto sincronizzato. Premi lo stesso per rileggere i siti e trovare annunci nuovi.'
+                : 'Hai già annunci online? Premi per leggerli dai siti e importarli qui.'}{' '}
           {lastImport && !busy && `Ultima lettura dei siti: ${ago(lastImport.at)}.`}
         </p>
         <button className="btn-primary" disabled={busy || !targets.length} onClick={() => void start()}>
@@ -416,7 +418,10 @@ export function List() {
             <SettingsIcon size={19} aria-hidden="true" />
           </a>
           <button className="btn-primary" onClick={create}>
-            <Plus size={18} aria-hidden="true" /> Nuovo<span className="hide-sm">annuncio</span>
+            <Plus size={18} aria-hidden="true" />
+            <span>
+              Nuovo<span className="hide-sm"> annuncio</span>
+            </span>
           </button>
         </div>
       </header>
