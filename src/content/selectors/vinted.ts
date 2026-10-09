@@ -40,6 +40,8 @@ export default {
       patterns: [/preferiti da (\d[\d.]*) utent/i, /(\d[\d.]*)\s*(?:preferit|persone (?:l'hanno|lo hanno) aggiunto)/i],
     },
   },
+  // "Cancella" sulla pagina del tuo annuncio, poi la conferma nella finestra (data-testid dal codice di Vinted, 10/2026)
+  remove: ['[data-testid="item-delete-button"]', '[data-testid="item-delete-confirmation-button"]'] as Locator[],
   probe: [
     { key: 'photos', label: 'Foto' },
     { key: 'title', label: 'Titolo' },

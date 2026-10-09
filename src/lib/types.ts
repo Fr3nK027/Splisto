@@ -24,7 +24,7 @@ export interface PlatformStatus {
   remoteId?: string // id dell'annuncio sul sito (per riconoscerlo alle importazioni successive)
   detailAt?: number // quando sono stati chiesti descrizione e foto dell'annuncio importato (una volta sola)
   /** Aggiornamento in corso di un annuncio già pubblicato (pagina "Modifica" del sito): lo stato resta "published". */
-  edit?: { state: StatusState; missing?: string[]; missingKeys?: string[]; message?: string; at: number }
+  edit?: { state: StatusState; missing?: string[]; missingKeys?: string[]; message?: string; at: number; remove?: boolean } // remove = eliminazione dal sito
   missingCount?: number // importazioni di fila in cui non era tra gli annunci attivi (2+ = venduto o tolto?)
   sitePrice?: number | null // prezzo sul sito (letto all'importazione o compilato e salvato dall'utente)
   siteTitle?: string // titolo sul sito
@@ -61,6 +61,7 @@ export interface Listing {
   status: Partial<Record<Platform, PlatformStatus>> // scritto solo da updateStatus
   stats: Partial<Record<Platform, PlatformStats>> // scritto solo da updateStats
   importedFrom?: Platform // creato importando un annuncio già online (es. messo dal telefono)
+  deleting?: boolean // eliminato in Splisto: sparisce quando è stato tolto da tutti i siti (se un sito fallisce, resta)
 }
 
 /** Accesso a un sito: ok = loggato, false = disconnesso, null = non verificabile. In chrome.storage.local 'auth'. */
@@ -148,6 +149,7 @@ export type JobReply =
   | { kind: 'import' } // legge la pagina "i miei annunci"
   | { kind: 'detail' } // legge descrizione, foto e statistiche di un annuncio importato
   | { kind: 'login' } // pagina di accesso aperta da Splisto: conferma quando sei rientrato
+  | { kind: 'remove' } // elimina l'annuncio dal sito (solo dove il percorso è verificato: `remove` nei selettori)
 
 export type Msg =
   | { type: 'publish'; listingId: string; platforms: Platform[]; queue?: boolean } // queue = sempre uno alla volta
@@ -164,6 +166,8 @@ export type Msg =
   | { type: 'detail'; detail: ItemDetail }
   | { type: 'importAll'; platforms?: Platform[] } // senza platforms: tutti i siti
   | { type: 'teach'; listingId: string; platform: Platform; key: string; label: string }
+  | { type: 'remove'; listingId: string; platforms: Platform[]; thenDelete?: boolean } // toglie dai siti; thenDelete = poi anche da Splisto
+  | { type: 'removed'; ok: boolean; message?: string }
   | { type: 'statusChanged'; listingId: string }
 
 /** Messaggio dal service worker al content script. */

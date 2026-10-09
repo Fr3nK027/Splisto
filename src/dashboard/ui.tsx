@@ -116,3 +116,15 @@ export function useLastImport(): LastImport | undefined {
   }, [])
   return li
 }
+
+/** Toglie l'annuncio dai siti dove è online (thenDelete: poi anche da Splisto). Ritorna la nota da mostrare. */
+export async function removeFromSites(listingId: string, platforms: Platform[], thenDelete: boolean): Promise<string> {
+  const r = (await chrome.runtime.sendMessage({ type: 'remove', listingId, platforms, thenDelete } satisfies Msg)) as { auto: Platform[]; manual: Platform[] } | null
+  const names = (ps: Platform[]) => ps.map((p) => PLATFORM_LABEL[p]).join(', ')
+  return [
+    r?.auto.length && `Elimino da ${names(r.auto)} in background.`,
+    r?.manual.length && `${names(r.manual)}: ho aperto l'annuncio, eliminalo tu dal sito.`,
+  ]
+    .filter(Boolean)
+    .join(' ')
+}

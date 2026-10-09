@@ -5,7 +5,7 @@ import { facebook } from './adapters/facebook'
 import { subito } from './adapters/subito'
 import { vinted } from './adapters/vinted'
 import { wallapop } from './adapters/wallapop'
-import { findOne, locatorFor, setLearned, sleep, type Locator } from './dom'
+import { click, findOne, locatorFor, setLearned, sleep, waitFor, type Locator } from './dom'
 import { goToOwnProfile, isMine, readDetail, readMine, wallapopEditUrl, wallapopItem } from './importers'
 import { SITES } from './selectors'
 import { norm, parseCount } from './text'
@@ -134,10 +134,46 @@ async function run(platform: Platform) {
   // pagina pubblica dell'annuncio: si legge anche senza accesso (es. eBay con l'accesso solo su ebay.com)
   if (job.kind === 'detail') return void send({ type: 'detail', detail: await readDetail(platform) })
   if (job.kind === 'stats') return collectStats(platform)
+  if (job.kind === 'remove') return removeListing(platform)
   current = job.listing
   currentJob = { edit: job.edit, url: job.url }
   if (job.kind === 'await') return watchPublished(platform, job.listing.title)
   await fill(platform, job.listing, { edit: job.edit })
+}
+
+const REMOVING = 'splisto-remove'
+
+/**
+ * Elimina l'annuncio aperto premendo in ordine i pulsanti `remove` del sito (l'ultimo è la conferma).
+ * Riuscito = la pagina dell'annuncio è stata lasciata o il pulsante di eliminazione non c'è più. Se il sito dopo la
+ * conferma carica un'altra pagina questo script riparte da capo: sessionStorage ricorda che la conferma è partita.
+ */
+async function removeListing(p: Platform) {
+  const done = (ok: boolean, message?: string) => void send({ type: 'removed', ok, message })
+  const confirmed = sessionStorage.getItem(REMOVING)
+  if (confirmed && confirmed !== location.href) {
+    sessionStorage.removeItem(REMOVING)
+    return done(true)
+  }
+  await sleep(1500)
+  if (loggedOut(p)) return done(false, 'non sei connesso al sito')
+  const steps = SITES[p].remove ?? []
+  for (const [i, step] of steps.entries()) {
+    const el = await waitFor([step], 10_000)
+    if (!el) return done(false, 'pulsante di eliminazione non trovato (la pagina è cambiata?)')
+    if (i === steps.length - 1) sessionStorage.setItem(REMOVING, location.href)
+    click(el)
+    await sleep(1000)
+  }
+  const start = sessionStorage.getItem(REMOVING)
+  for (const end = Date.now() + 15_000; Date.now() < end; await sleep(500)) {
+    if (location.href !== start || !findOne([steps[0]])) {
+      sessionStorage.removeItem(REMOVING)
+      return done(true)
+    }
+  }
+  sessionStorage.removeItem(REMOVING)
+  done(false, 'il sito non ha confermato l’eliminazione')
 }
 
 async function fill(p: Platform, listing: JobListing, opts?: FillOptions) {

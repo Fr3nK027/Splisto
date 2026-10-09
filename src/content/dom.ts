@@ -93,7 +93,9 @@ export function setText(el: HTMLElement, value: string): boolean {
       el.dispatchEvent(new Event('input', { bubbles: true }))
       el.dispatchEvent(new Event('change', { bubbles: true }))
     }
-    el.dispatchEvent(new Event('blur', { bubbles: false }))
+    // blur vero: React ascolta "focusout", non un evento "blur" finto (Vinted riformatta il prezzo solo così)
+    if (el.ownerDocument.activeElement === el) el.blur()
+    else el.dispatchEvent(new Event('blur', { bubbles: false }))
     return took()
   }
   if (el.isContentEditable || el.ownerDocument.designMode === 'on') {
@@ -280,6 +282,12 @@ export class Form {
     const el = await this.find(key, mode)
     if (el && this.opts.edit && sameText(currentText(el), value)) return // già uguale sul sito
     let ok = false
+    if (el) {
+      // Alcuni campi cambiano formato quando ricevono il fuoco (Vinted: "799,00 €" diventa "799.00"): scrivendo
+      // prima che la pagina abbia finito, il prezzo restava vuoto e salvando compariva "Qualcosa è andato storto".
+      el.focus()
+      await sleep(150)
+    }
     try {
       ok = !!el && setText(el, value)
     } catch {

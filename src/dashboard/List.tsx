@@ -1,14 +1,14 @@
 import { Check, CopyPlus, RotateCcw, Download, ExternalLink, Plus, RefreshCw, Search, Send, Settings as SettingsIcon, ShieldCheck, Trash2 } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { SITES } from '../content/selectors'
-import { editUrlFor, SITE_URL } from '../content/text'
+import { editUrlFor } from '../content/text'
 import { bulkPatch } from '../lib/bulk'
 import { allListings, deleteListing, duplicateListing, getListing, newListing, saveFields, saveListing } from '../lib/db'
 import { outOfSync, PLATFORM_LABEL, publishedOn, STALE_DAYS } from '../lib/platforms'
 import { checkUpdate, type Release } from '../lib/update'
 import { PLATFORMS, type AuthState, type LastImport, type Listing, type Msg, type Platform } from '../lib/types'
 import { BulkBar } from './BulkBar'
-import { ago, Dot, fmt, Logo, STATE_LABEL, StatPair, Thumb, useAuth, useLastImport, useStatusChanged } from './ui'
+import { ago, Dot, fmt, Logo, removeFromSites, STATE_LABEL, StatPair, Thumb, useAuth, useLastImport, useStatusChanged } from './ui'
 
 const DAY = 86_400_000
 
@@ -390,8 +390,11 @@ export function List() {
   }
 
   async function remove(l: Listing) {
-    if (!confirm(`Eliminare "${l.title || 'Senza titolo'}"? L'operazione non si può annullare.`)) return
-    await deleteListing(l.id)
+    const on = publishedOn(l)
+    const where = on.length ? ` e da ${on.map((p) => PLATFORM_LABEL[p]).join(', ')}` : ''
+    if (!confirm(`Eliminare "${l.title || 'Senza titolo'}" da Splisto${where}? L'operazione non si può annullare.`)) return
+    if (on.length) setNote(await removeFromSites(l.id, on, true))
+    else await deleteListing(l.id)
     reload()
   }
 
@@ -544,15 +547,10 @@ export function List() {
                   {toDrop.length > 0 && (
                     <button
                       className="btn-text danger-strong"
-                      title="Apre l'annuncio sugli altri siti: eliminalo lì, poi segnalo come rimosso nel pannello Stato"
-                      onClick={() => {
-                        for (const p of toDrop) {
-                          const u = l.status[p]?.url
-                          if (u && SITE_URL.test(u)) void chrome.tabs.create({ url: u, active: false })
-                        }
-                        setNote(
-                          `Ho aperto l'annuncio su ${toDrop.map((p) => PLATFORM_LABEL[p]).join(', ')}: eliminalo dal sito, poi “Segna rimosso” nell'annuncio.`,
-                        )
+                      title="Elimina l'annuncio dagli altri siti (dove non si può in automatico lo apre e lo elimini tu)"
+                      onClick={async () => {
+                        if (!confirm(`Eliminare l'annuncio da ${toDrop.map((p) => PLATFORM_LABEL[p]).join(', ')}? Non si può annullare.`)) return
+                        setNote(await removeFromSites(l.id, toDrop, false))
                       }}
                     >
                       Togli dagli altri siti
@@ -624,6 +622,7 @@ export function List() {
           onlineOn={Object.fromEntries(PLATFORMS.map((p) => [p, all.filter((l) => picked.has(l.id) && !l.sold && l.status[p]?.state === 'published').length])) as Record<Platform, number>}
           onChanged={reload}
           onClear={() => setPicked(new Set())}
+          onNote={setNote}
         />
       )}
     </>

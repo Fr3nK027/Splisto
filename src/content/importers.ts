@@ -278,6 +278,7 @@ export async function readDetail(p: Platform): Promise<ItemDetail> {
       [...document.querySelectorAll<HTMLImageElement>(cfg.detail.photos)]
         .map((i) => i.getAttribute('data-zoom-src') || i.getAttribute('data-src') || i.currentSrc || i.src)
         .filter((u) => u.startsWith('https://'))
+        .map(p === 'vinted' ? vintedFull() : (u: string) => u)
         .map((u) => [u.split('?')[0], u] as const),
     ).values(),
   ].slice(0, 10)
@@ -292,4 +293,19 @@ export async function readDetail(p: Platform): Promise<ItemDetail> {
     views: parseCount(text, cfg.stats.views.patterns),
     likes: parseCount(text, cfg.stats.likes.patterns),
   }
+}
+
+/**
+ * Vinted: le foto nella pagina sono da 800 px; i dati della pagina hanno anche l'originale (1600 px, link firmato,
+ * verificato 10/2026). Si riconosce dal codice nel percorso (images1.vinted.net/t/<codice>/f800/...).
+ */
+function vintedFull(): (u: string) => string {
+  const data = [...document.scripts]
+    .map((s) => s.textContent ?? '')
+    .filter((t) => t.includes('full_size_url'))
+    .join('\n')
+    .replace(/\\"/g, '"')
+    .replace(/\\u0026/g, '&')
+  const full = [...data.matchAll(/"full_size_url":"(https:[^"]+)"/g)].map((m) => m[1])
+  return (u) => full.find((f) => f.includes(`/${u.split('/')[4]}/`)) ?? u
 }

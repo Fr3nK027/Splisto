@@ -38,6 +38,11 @@ export interface Site {
    * né Wallapop, che parte da una procedura a passi).
    */
   probe?: { key: string; label: string }[]
+  /**
+   * Pulsanti da premere in ordine sulla pagina del tuo annuncio per eliminarlo (l'ultimo è la conferma del sito).
+   * Solo dove il percorso è verificato: altrove Splisto apre l'annuncio e lo elimini tu.
+   */
+  remove?: Locator[]
 }
 
 export const SITES: Record<Platform, Site> = {

@@ -2,9 +2,9 @@ import { Check, Dot, Minus, Plus, RotateCcw, Send, Trash2, Undo2, X } from 'luci
 import { useState } from 'react'
 import { bulkPatch, snapshot, type BulkOps, type TextMode } from '../lib/bulk'
 import { deleteListing, getListing, saveFields } from '../lib/db'
-import { CATEGORIES, CONDITION_LABEL, PLATFORM_LABEL } from '../lib/platforms'
+import { CATEGORIES, CONDITION_LABEL, PLATFORM_LABEL, publishedOn } from '../lib/platforms'
 import { PLATFORMS, type Condition, type Listing, type Msg, type Platform } from '../lib/types'
-import { Logo } from './ui'
+import { Logo, removeFromSites } from './ui'
 
 type SiteOp = 'keep' | 'add' | 'remove'
 const NEXT: Record<SiteOp, SiteOp> = { keep: 'add', add: 'remove', remove: 'keep' }
@@ -16,10 +16,11 @@ interface Props {
   onlineOn: Record<Platform, number> // annunci selezionati online su ogni sito
   onChanged: () => void
   onClear: () => void
+  onNote: (s: string) => void // nota nella lista (la barra si chiude)
 }
 
 /** Modifica insieme gli annunci selezionati: prezzo, titolo, descrizione, condizione, categoria, marca, siti. */
-export function BulkBar({ ids, anyOnline, onlineOn, onChanged, onClear }: Props) {
+export function BulkBar({ ids, anyOnline, onlineOn, onChanged, onClear, onNote }: Props) {
   const [priceMode, setPriceMode] = useState<'' | 'set' | 'pct' | 'add'>('')
   const [priceValue, setPriceValue] = useState('')
   const [titleMode, setTitleMode] = useState<'' | 'append' | 'prepend' | 'replace'>('')
@@ -122,8 +123,15 @@ export function BulkBar({ ids, anyOnline, onlineOn, onChanged, onClear }: Props)
   }
 
   async function remove() {
-    if (!confirm(`Eliminare ${ids.length} annunci da Splisto? Sui siti restano online. L'operazione non si può annullare.`)) return
-    for (const id of ids) await deleteListing(id)
+    if (!confirm(`Eliminare ${ids.length} annunci da Splisto e dai siti dove sono online? L'operazione non si può annullare.`)) return
+    const notes: string[] = []
+    for (const id of ids) {
+      const l = await getListing(id)
+      const on = l ? publishedOn(l) : []
+      if (on.length) notes.push(await removeFromSites(id, on, true))
+      else await deleteListing(id)
+    }
+    if (notes.length) onNote(notes.join(' '))
     onClear()
     onChanged()
   }

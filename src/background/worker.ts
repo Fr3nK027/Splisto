@@ -1,7 +1,7 @@
 import contentScript from '../content/index.ts?iife'
 import { SITES } from '../content/selectors'
 import { conditionFrom, editUrlFor, htmlToText, idInUrl, PHOTO_URL, platformOfUrl, sameItem, sameUrl, SITE_URL, withDetails } from '../content/text'
-import { allListings, blobToWire, getListing, newListing, patchListing, saveListing, updateStats, updateStatus } from '../lib/db'
+import { allListings, blobToWire, deleteListing, getListing, newListing, patchListing, saveListing, updateStats, updateStatus } from '../lib/db'
 import { reloadIfStale } from '../lib/fresh'
 import { resizeImage } from '../lib/image'
 import { categoryFor, PLATFORM_LABEL, publishedOn, sitePriceFor, titleFor } from '../lib/platforms'
@@ -16,14 +16,15 @@ import { PLATFORMS, type AuthState, type ImportedItem, type ItemDetail, type Job
  *  - auth: controlla solo se sei ancora loggato (listingId vuoto);
  *  - import: legge la pagina "i miei annunci" del sito (listingId vuoto);
  *  - detail: legge descrizione, foto e statistiche di un annuncio appena importato;
- *  - login: pagina di accesso aperta da Splisto; quando sei rientrato conferma l'accesso (la scheda resta aperta).
+ *  - login: pagina di accesso aperta da Splisto; quando sei rientrato conferma l'accesso (la scheda resta aperta);
+ *  - remove: elimina l'annuncio dal sito (pulsanti `remove` nei selettori), poi chiude la scheda.
  * Tutto in storage.session perché il service worker può essere fermato in qualsiasi momento.
  * Lo script dei siti è registrato solo finché c'è almeno un job (syncScript): senza lavori in corso nessuna pagina lo riceve.
  */
 interface Job {
   listingId: string
   platform: Platform
-  kind: 'fill' | 'stats' | 'auth' | 'import' | 'detail' | 'login'
+  kind: 'fill' | 'stats' | 'auth' | 'import' | 'detail' | 'login' | 'remove'
   phase?: 'await'
   autoClose?: boolean
   url?: string
@@ -584,12 +585,13 @@ chrome.alarms.onAlarm.addListener((a) => {
 
 chrome.tabs.onRemoved.addListener((tabId) => {
   void getJob(tabId).then(async (job) => {
-    if (job?.kind !== 'fill') return
+    if (job?.kind !== 'fill' && job?.kind !== 'remove') return
     // chiusa la pagina "Modifica" dopo la compilazione: rileggi quel sito per sapere se hai salvato (prezzo e titolo sul sito)
     if (job.edit && job.phase === 'await') await chrome.alarms.create(`import-one:${job.platform}`, { delayInMinutes: 0.5 })
     const l = await patchListing(job.listingId, (x) => {
+      if (job.kind === 'remove') x.deleting = undefined // scheda chiusa a metà eliminazione: l'annuncio resta in Splisto
       const s = x.status[job.platform]
-      if (job.edit && s?.edit) x.status = { ...x.status, [job.platform]: { ...s, edit: undefined } }
+      if ((job.edit || job.kind === 'remove') && s?.edit) x.status = { ...x.status, [job.platform]: { ...s, edit: undefined } }
       else if (s?.state === 'opening') x.status = { ...x.status, [job.platform]: { ...s, state: s.url ? 'published' : 'idle', message: undefined } }
     })
     if (l) void notify(l.id)
@@ -787,6 +789,45 @@ async function handle(msg: Msg, sender: chrome.runtime.MessageSender): Promise<u
       const tab = await chrome.tabs.update(id, { active: true })
       if (tab?.windowId != null) await chrome.windows.update(tab.windowId, { focused: true })
       await chrome.tabs.sendMessage(id, { type: 'teach', key: msg.key, label: msg.label } satisfies TabMsg)
+      return true
+    }
+
+    case 'remove': {
+      // Toglie l'annuncio dai siti dove è online. Dove il percorso è verificato (`remove` nei selettori) lo fa da
+      // solo in background; altrove apre l'annuncio e lo elimini tu. thenDelete: alla fine anche da Splisto.
+      const l = await getListing(msg.listingId)
+      if (!l) return { auto: [], manual: [] }
+      const online = msg.platforms.filter((p) => l.status[p]?.state === 'published' && SITE_URL.test(l.status[p]?.url ?? ''))
+      const auto = online.filter((p) => SITES[p].remove)
+      const manual = online.filter((p) => !SITES[p].remove)
+      if (msg.thenDelete) {
+        if (!auto.length) await deleteListing(l.id)
+        else await patchListing(l.id, (x) => void (x.deleting = true))
+      }
+      for (const p of manual) await chrome.tabs.create({ url: l.status[p]!.url!, active: false })
+      for (const p of auto) {
+        await updateStatus(l.id, p, { edit: { state: 'opening', at: Date.now(), remove: true } })
+        await openTab(l.status[p]!.url!, { listingId: l.id, platform: p, kind: 'remove', autoClose: true }, false)
+      }
+      void notify(l.id)
+      return { auto, manual }
+    }
+
+    case 'removed': {
+      const job = await jobFor(sender)
+      if (!job || job.kind !== 'remove' || tabId == null) return false
+      if (msg.ok) {
+        await updateStatus(job.listingId, job.platform, { state: 'removed', edit: undefined, message: undefined })
+        await closeJob(tabId, job)
+      } else {
+        const message = `${msg.message ?? 'errore'}. Eliminalo tu nella scheda aperta, poi “Segna rimosso”.`
+        await updateStatus(job.listingId, job.platform, { edit: { state: 'error', message, at: Date.now(), remove: true } })
+        await patchListing(job.listingId, (x) => void (x.deleting = undefined)) // resta in Splisto, con l'errore in vista
+        await dropJob(tabId) // la scheda resta aperta per finire a mano
+      }
+      const l = await getListing(job.listingId)
+      if (l?.deleting && !(await allJobs()).some(([, j]) => j.kind === 'remove' && j.listingId === l.id)) await deleteListing(l.id)
+      void notify(job.listingId)
       return true
     }
 

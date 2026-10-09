@@ -109,7 +109,7 @@ export function Status({ listing, onChanged, onReopen }: Props) {
               )}
               {s?.edit && (
                 <p className={s.edit.state === 'error' ? 'error-text' : 'hint'}>
-                  <Dot state={s.edit.state} /> Aggiornamento: {EDIT_LABEL[s.edit.state] ?? STATE_LABEL[s.edit.state]}
+                  <Dot state={s.edit.state} /> {s.edit.remove ? 'Eliminazione' : 'Aggiornamento'}: {EDIT_LABEL[s.edit.state] ?? STATE_LABEL[s.edit.state]}
                   {!!s.edit.missing?.length && ` — da fare a mano: ${s.edit.missing.join(', ')}`}
                   {s.edit.state === 'error' && s.edit.message && ` — ${s.edit.message}`}
                 </p>

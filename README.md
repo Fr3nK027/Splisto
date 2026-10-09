@@ -20,7 +20,9 @@ Quando in dashboard compare **Aggiorna a x.y.z**, cliccalo. La prima volta scegl
 1. **Nuovo annuncio**: foto (massimo 10, la prima è la copertina), titolo, prezzo, dettagli. Si salva da solo.
 2. Scegli i siti e premi **Pubblica ovunque**: si apre una scheda per sito, già compilata.
 3. Controlla ogni scheda e premi **Pubblica** sul sito. Splisto salva il link da solo.
-4. Venduto? **Segna come venduto…** apre gli altri siti per togliere l'annuncio.
+4. Venduto? **Segna come venduto…**, poi **Togli dagli altri siti**.
+
+Eliminando un annuncio in Splisto lo togli anche dai siti: da Vinted da solo, sugli altri apre l'annuncio e lo elimini tu.
 
 ## Altre funzioni
 
