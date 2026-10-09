@@ -178,12 +178,14 @@ export async function choose(trigger: HTMLElement, wanted: string): Promise<bool
     await sleep(400)
   }
   if (steps.length === 1) {
-    // menu con campo di ricerca (es. "Cerca una categoria" su Vinted): scrivi per filtrare
+    // menu con campo di ricerca (es. "Cerca una categoria" su Vinted): scrivi per filtrare.
+    // Il campo col fuoco vale solo se è comparso con il menu: un campo del modulo già compilato (es. il titolo, rimasto
+    // col fuoco) non è la ricerca. Su Wallapop il titolo diventava il nome della categoria ("Altro").
     const active = document.activeElement
     const editable = (e: unknown): e is HTMLInputElement => e instanceof HTMLInputElement && e.type !== 'file' && !e.readOnly
     const search = editable(trigger)
       ? trigger
-      : editable(active) && active !== trigger
+      : editable(active) && active !== trigger && !inputsBefore.has(active)
         ? active
         : (textInputs().find((e) => !inputsBefore.has(e) && !e.readOnly) ?? null)
     if (search) {
