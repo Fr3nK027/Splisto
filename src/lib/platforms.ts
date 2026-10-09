@@ -1,4 +1,4 @@
-import { PLATFORMS, type Condition, type Listing, type Platform } from './types'
+import { PLATFORMS, type Condition, type Listing, type Platform } from './types.ts' // .ts: i test con node lo caricano davvero
 
 /** Siti dove l'annuncio è online. */
 export const publishedOn = (l: Pick<Listing, 'status'>) => PLATFORMS.filter((p) => l.status[p]?.state === 'published')
