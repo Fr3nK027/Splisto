@@ -68,6 +68,8 @@ export interface AuthState {
   ok: boolean | null
   at: number
   checking?: boolean
+  /** Campi del modulo non trovati dall'ultimo controllo accessi: selettori da aggiornare (o da "Insegna"). */
+  broken?: string[]
 }
 
 /** Annuncio letto dalla pagina "i miei annunci" di un sito. */
@@ -146,7 +148,7 @@ export type Msg =
   | { type: 'published'; url: string }
   | { type: 'stats'; views: number | null; likes: number | null }
   | { type: 'refreshStats' }
-  | { type: 'auth'; platform: Platform; ok: boolean | null }
+  | { type: 'auth'; platform: Platform; ok: boolean | null; broken?: string[] } // broken solo dal controllo accessi
   | { type: 'checkAuth' }
   | { type: 'imported'; platform: Platform; items: ImportedItem[]; error?: string; partial?: boolean }
   | { type: 'detail'; detail: ItemDetail }

@@ -56,8 +56,7 @@ export default {
     'Accessori moto': '36',
   } as Record<string, string>,
   formBase: 'https://inserimento.subito.it/?category=',
-  // Passo 1: campo "Scrivi l'oggetto del tuo annuncio" e categorie proposte (link a inserimento.subito.it). Verificato 10/2026.
-  subject: ['#ad_name', 'input[name="ad_name"]'] as Locator[],
+  // Passo 1: categorie proposte per il titolo (link a inserimento.subito.it). Verificato 10/2026.
   suggestion: '#suggestions-autocomplete a[href*="inserimento.subito.it"]',
   // Dopo l'inserimento Subito mette l'annuncio in revisione: il link arriva dopo. Se lo trova, lo salva.
   published: {
@@ -75,7 +74,10 @@ export default {
   // Se il sito torna a rifiutarle ("Caricamento fallito") metti false: restano da caricare a mano.
   uploadPhotos: true,
   maxPhotos: 6, // Subito ne accetta al massimo 6
+  probe: [{ key: 'subject', label: 'Oggetto dell’annuncio' }],
   fields: {
+    // Passo 1 (subito.it/vendere): "Scrivi l'oggetto del tuo annuncio". Verificato 10/2026.
+    subject: ['#ad_name', 'input[name="ad_name"]'],
     photos: ['#images-file-input', 'input[name="images"]', 'input[type="file"][accept*="image"]'],
     title: ['#title', 'input[name="title"]', { label: 'Titolo' }],
     description: ['#description', 'textarea[name="description"]', { label: 'Descrizione' }],

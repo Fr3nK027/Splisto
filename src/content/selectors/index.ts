@@ -31,6 +31,13 @@ export interface Site {
   mine: { url: string; match: RegExp }
   /** Pagina del singolo annuncio: descrizione e foto (per completare gli annunci importati). */
   detail: { description: string[]; photos: string }
+  fields: Record<string, Locator[]>
+  /**
+   * Campi che la pagina del controllo accessi (`authUrl` o `url`) mostra subito da loggato: se uno manca,
+   * il selettore è da aggiornare. Solo dove quella pagina è il modulo (non eBay, che controlla la home,
+   * né Wallapop, che parte da una procedura a passi).
+   */
+  probe?: { key: string; label: string }[]
 }
 
 export const SITES: Record<Platform, Site> = {

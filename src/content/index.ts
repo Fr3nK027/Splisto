@@ -63,7 +63,18 @@ async function checkAuth(p: Platform) {
       break
     }
   }
-  await send({ type: 'auth', platform: p, ok })
+  await send({ type: 'auth', platform: p, ok, ...(ok && { broken: await probeFields(p) }) })
+}
+
+/** Da loggato sulla pagina del modulo: campi che i selettori (o "Insegna") non trovano più. */
+async function probeFields(p: Platform): Promise<string[] | undefined> {
+  const probe = SITES[p].probe
+  if (!probe || !SITES[p].formUrl.some((u) => location.href.includes(u))) return undefined // pagina diversa dal modulo: nessun esito
+  const learned = await loadLearned(p)
+  const locs = (key: string) => [...(learned[key] ? [learned[key]] : []), ...(SITES[p].fields[key] ?? [])]
+  const missing = () => probe.filter(({ key }) => !findOne(locs(key))).map((f) => f.label)
+  for (const end = Date.now() + 8000; missing().length && Date.now() < end; ) await sleep(500) // il modulo può comparire dopo il menu utente
+  return missing()
 }
 
 /**

@@ -40,6 +40,12 @@ export default {
       patterns: [/preferiti da (\d[\d.]*) utent/i, /(\d[\d.]*)\s*(?:preferit|persone (?:l'hanno|lo hanno) aggiunto)/i],
     },
   },
+  probe: [
+    { key: 'photos', label: 'Foto' },
+    { key: 'title', label: 'Titolo' },
+    { key: 'description', label: 'Descrizione' },
+    { key: 'price', label: 'Prezzo' },
+  ],
   fields: {
     photos: ['[data-testid="add-photos-input"]', 'input[type="file"][accept*="image"]', 'input[type="file"]'],
     title: ['[data-testid="title--input"]', 'input#title', 'input[name="title"]', { label: 'Titolo' }],

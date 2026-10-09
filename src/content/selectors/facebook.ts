@@ -41,6 +41,10 @@ export default {
   uploadPhotos: true,
   // contatore delle foto caricate, es. "Foto · 2/10 - Puoi aggiungere fino a 10 foto."
   photoCount: /(\d+)\s*\/\s*10\b/,
+  probe: [
+    { key: 'title', label: 'Titolo' },
+    { key: 'price', label: 'Prezzo' },
+  ],
   fields: {
     photos: ['input[type="file"][accept*="image"]', 'input[type="file"]'],
     title: [{ label: 'Titolo' }],

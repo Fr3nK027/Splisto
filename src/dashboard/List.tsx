@@ -181,6 +181,11 @@ function Platforms({ items, note, onNote }: { items: Listing[]; note: string; on
                 <AuthPill a={a} />
                 <span className="pf-when">{a?.at ? ago(a.at) : 'mai controllato'}</span>
               </div>
+              {!!a?.broken?.length && (
+                <span className="tag tag-warn" title="Il sito ha cambiato pagina: usa “Insegna” alla prossima compilazione o aggiorna i selettori (README).">
+                  Campi non trovati: {a.broken.join(', ')}
+                </span>
+              )}
               <dl className="pf-nums">
                 <div>
                   <dt>Online</dt>

@@ -10,7 +10,7 @@ import { bestMatch, priceText } from '../text'
  * "Giacca di jeans Levis Trucker" -> Giacche e giubbotti (category=16&type=2), in circa un secondo.
  */
 async function suggestedForm(title: string): Promise<string | null> {
-  const input = await waitFor(cfg.subject, 8000)
+  const input = await waitFor(cfg.fields.subject, 8000)
   if (!(input instanceof HTMLInputElement) || !title.trim()) return null
   setText(input, title.slice(0, 60))
   for (let i = 0; i < 20; i++) {

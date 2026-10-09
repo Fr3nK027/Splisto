@@ -171,11 +171,13 @@ async function allAuth(): Promise<Partial<Record<Platform, AuthState>>> {
   return Object.fromEntries(PLATFORMS.map((p) => [p, all[authKey(p)]]))
 }
 
-async function setAuth(p: Platform, ok: boolean | null) {
+async function setAuth(p: Platform, ok: boolean | null, broken?: string[]) {
   const prev = (await allAuth())[p]
   // conferme passive ripetute (navigando sul sito): basta una ogni 5 minuti
-  if (ok === true && prev?.ok === true && !prev.checking && Date.now() - prev.at < 5 * 60_000) return
-  await chrome.storage.local.set({ [authKey(p)]: { ok, at: Date.now() } satisfies AuthState })
+  if (ok === true && !broken && prev?.ok === true && !prev.checking && Date.now() - prev.at < 5 * 60_000) return
+  // i campi non trovati li aggiorna solo il controllo accessi sulla pagina del modulo
+  const b = broken ?? prev?.broken
+  await chrome.storage.local.set({ [authKey(p)]: { ok, at: Date.now(), ...(b?.length && { broken: b }) } satisfies AuthState })
   if (ok === false && prev?.ok !== false) {
     chrome.notifications.create(`auth:${p}`, {
       type: 'basic',
@@ -203,7 +205,7 @@ async function checkAllAuth() {
   if (jobs.some((j) => j?.kind === 'auth')) return // controllo già in corso
   const auth = await allAuth()
   for (const p of PLATFORMS) {
-    await chrome.storage.local.set({ [authKey(p)]: { ok: auth[p]?.ok ?? null, at: auth[p]?.at ?? 0, checking: true } satisfies AuthState })
+    await chrome.storage.local.set({ [authKey(p)]: { ...auth[p], ok: auth[p]?.ok ?? null, at: auth[p]?.at ?? 0, checking: true } satisfies AuthState })
     await openTab(SITES[p].authUrl ?? SITES[p].url, { listingId: '', platform: p, kind: 'auth', autoClose: true }, false)
   }
   await chrome.alarms.create('auth-timeout', { delayInMinutes: 1 })
@@ -225,7 +227,8 @@ async function authTimeout() {
   for (const p of PLATFORMS) {
     const a = auth[p]
     if (a?.checking && !jobs.some((j) => j?.kind === 'auth' && j.platform === p)) {
-      await chrome.storage.local.set({ [authKey(p)]: { ok: a.ok, at: a.at } satisfies AuthState })
+      const { checking: _, ...rest } = a
+      await chrome.storage.local.set({ [authKey(p)]: rest satisfies AuthState })
     }
   }
 }
@@ -750,7 +753,7 @@ async function handle(msg: Msg, sender: chrome.runtime.MessageSender): Promise<u
     }
 
     case 'auth': {
-      await setAuth(msg.platform, msg.ok)
+      await setAuth(msg.platform, msg.ok, Array.isArray(msg.broken) ? msg.broken.map(String).slice(0, 10) : undefined)
       const job = await getJob(tabId)
       if (job?.kind === 'auth') {
         await dropJob(tabId!)
