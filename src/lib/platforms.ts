@@ -1,4 +1,7 @@
-import type { Condition, Listing, Platform } from './types'
+import { PLATFORMS, type Condition, type Listing, type Platform } from './types'
+
+/** Siti dove l'annuncio è online. */
+export const publishedOn = (l: Pick<Listing, 'status'>) => PLATFORMS.filter((p) => l.status[p]?.state === 'published')
 
 export const PLATFORM_LABEL: Record<Platform, string> = {
   vinted: 'Vinted',

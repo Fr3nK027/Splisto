@@ -2,7 +2,7 @@ import { ArrowLeft, Check, Send } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { checkPhotos, describeFromPhotos, improveDescription, improveTitle, titlesPerSite } from '../lib/ai'
 import { deleteListing, getListing, saveFields } from '../lib/db'
-import { CATEGORIES, categoryFor, CONDITION_LABEL, ebaySoldSearch, PLATFORM_LABEL, priceFor, TITLE_MAX, titleLimit } from '../lib/platforms'
+import { CATEGORIES, categoryFor, CONDITION_LABEL, ebaySoldSearch, PLATFORM_LABEL, priceFor, publishedOn, TITLE_MAX, titleLimit } from '../lib/platforms'
 import { DEFAULT_SETTINGS, getSettings, netPrice, setSettings, TONE_LABEL, type Settings, type Tone } from '../lib/settings'
 import { SITE_URL } from '../content/text'
 import { PLATFORMS, type Condition, type Listing, type Msg, type Platform } from '../lib/types'
@@ -77,7 +77,7 @@ export function Editor({ id }: { id: string }) {
 
   const tone = settings.tone
   const limit = titleLimit(l.platforms, l.titleOverride)
-  const published = PLATFORMS.filter((p) => l.status[p]?.state === 'published')
+  const published = publishedOn(l)
   // dove manca: annuncio nuovo; dove è già pubblicato: pagina "Modifica" del sito (niente doppioni)
   const toUpdate = l.platforms.filter((p) => published.includes(p))
   const toCreate = l.platforms.filter((p) => !published.includes(p) && l.status[p]?.state !== 'removed')

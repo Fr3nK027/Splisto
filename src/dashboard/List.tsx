@@ -4,13 +4,12 @@ import { SITES } from '../content/selectors'
 import { editUrlFor, SITE_URL } from '../content/text'
 import { bulkPatch } from '../lib/bulk'
 import { allListings, deleteListing, duplicateListing, getListing, newListing, saveFields, saveListing } from '../lib/db'
-import { outOfSync, PLATFORM_LABEL, STALE_DAYS } from '../lib/platforms'
+import { outOfSync, PLATFORM_LABEL, publishedOn, STALE_DAYS } from '../lib/platforms'
 import { PLATFORMS, type AuthState, type LastImport, type Listing, type Msg, type Platform } from '../lib/types'
 import { BulkBar } from './BulkBar'
-import { ago, Dot, Logo, STATE_LABEL, StatPair, Thumb, useAuth, useLastImport, useStatusChanged } from './ui'
+import { ago, Dot, fmt, Logo, STATE_LABEL, StatPair, Thumb, useAuth, useLastImport, useStatusChanged } from './ui'
 
 const DAY = 86_400_000
-const fmt = (n: number | null) => (n == null ? '–' : n.toLocaleString('it-IT'))
 
 /** Giorni online del primo sito su cui l'annuncio è pubblicato (null se non pubblicato o venduto). */
 function daysOnline(l: Listing): number | null {
@@ -34,7 +33,7 @@ function total(items: Listing[], k: 'views' | 'likes', only?: Platform): number 
 
 /** Il sito su cui è pubblicato, se è uno solo (suggerisce di pubblicarlo anche altrove). */
 function onlyOn(l: Listing): Platform | null {
-  const on = PLATFORMS.filter((p) => l.status[p]?.state === 'published')
+  const on = publishedOn(l)
   return on.length === 1 ? on[0] : null
 }
 
@@ -65,7 +64,7 @@ const openSite = (p: Platform, login = false) => void chrome.tabs.create({ url: 
 /** Siti da cui l'annuncio è sparito per 2 importazioni di fila (venduto o tolto?). */
 const goneSites = (l: Listing) => (l.sold ? [] : PLATFORMS.filter((p) => l.status[p]?.state === 'published' && (l.status[p]?.missingCount ?? 0) >= 2))
 /** Venduto: siti dove è ancora pubblicato e va tolto. */
-const toRemove = (l: Listing) => (l.sold ? PLATFORMS.filter((p) => p !== l.sold!.platform && l.status[p]?.state === 'published') : [])
+const toRemove = (l: Listing) => (l.sold ? publishedOn(l).filter((p) => p !== l.sold!.platform) : [])
 
 /** Siti dove l'annuncio online è diverso da Splisto, con cosa cambia (es. "eBay: prezzo"). */
 const staleSites = (l: Listing) => PLATFORMS.map((p) => [p, outOfSync(l, p)] as const).filter(([, why]) => why.length)
@@ -352,7 +351,7 @@ export function List() {
     const patch = bulkPatch(fresh, { price: { mode: 'pct', value: -10 } })
     if (!confirm(`Abbassare "${fresh.title}" da ${fresh.price} € a ${patch.price} € e aprire i siti per salvarlo?`)) return
     await saveFields(l.id, patch)
-    const online = PLATFORMS.filter((p) => fresh.status[p]?.state === 'published')
+    const online = publishedOn(fresh)
     const n = online.length ? ((await chrome.runtime.sendMessage({ type: 'publish', listingId: l.id, platforms: online } satisfies Msg)) as unknown) : 0
     setNote(
       typeof n === 'number' && n > 0
@@ -376,7 +375,7 @@ export function List() {
   }
 
   async function relist(l: Listing) {
-    const on = PLATFORMS.filter((p) => l.status[p]?.state === 'published')
+    const on = publishedOn(l)
     if (!confirm(`Duplicare come nuovo "${l.title}" su ${on.map((p) => PLATFORM_LABEL[p]).join(', ')}?\n\nSi apre il vecchio annuncio: eliminalo tu dal sito. Il modulo del nuovo si compila da solo: il pulsante finale lo premi tu.`)) return
     const n = (await chrome.runtime.sendMessage({ type: 'relist', listingId: l.id, platforms: on } satisfies Msg)) as unknown
     setNote(typeof n === 'number' && n > 0 ? `Elimina il vecchio annuncio nelle schede aperte, poi pubblica il nuovo dal modulo compilato (${n} ${n === 1 ? 'sito' : 'siti'}).` : 'Nessun annuncio online da duplicare.')

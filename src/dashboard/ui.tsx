@@ -41,7 +41,7 @@ export function useStatusChanged(cb: (listingId: string) => void) {
   }, [cb])
 }
 
-const fmt = (n: number | null | undefined) => (n == null ? '–' : n.toLocaleString('it-IT'))
+export const fmt = (n: number | null | undefined) => (n == null ? '–' : n.toLocaleString('it-IT'))
 
 /** Visualizzazioni e like (– = non letti). */
 export function StatPair({ views, likes }: { views?: number | null; likes?: number | null }) {

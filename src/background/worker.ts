@@ -4,7 +4,7 @@ import { conditionFrom, editUrlFor, htmlToText, idInUrl, PHOTO_URL, platformOfUr
 import { allListings, blobToWire, getListing, newListing, patchListing, saveListing, updateStats, updateStatus } from '../lib/db'
 import { reloadIfStale } from '../lib/fresh'
 import { resizeImage } from '../lib/image'
-import { categoryFor, PLATFORM_LABEL, sitePriceFor, titleFor } from '../lib/platforms'
+import { categoryFor, PLATFORM_LABEL, publishedOn, sitePriceFor, titleFor } from '../lib/platforms'
 import { getSettings } from '../lib/settings'
 import { allowed, missingFromSite, sameRemote } from './rules'
 import { PLATFORMS, type AuthState, type ImportedItem, type ItemDetail, type JobListing, type LastImport, type JobReply, type Listing, type Msg, type Platform, type StatusState, type TabMsg } from '../lib/types'
@@ -451,7 +451,7 @@ const applyImport = (p: Platform, items: ImportedItem[], partial = false) =>
       }
     }
     for (const l of soldNow) {
-      const others = PLATFORMS.filter((q) => q !== p && l.status[q]?.state === 'published')
+      const others = publishedOn(l).filter((q) => q !== p)
       toast(
         `sold:${l.id}`,
         `Venduto su ${PLATFORM_LABEL[p]}: ${l.title.slice(0, 60)}`,
