@@ -67,6 +67,9 @@ const openSite = (p: Platform, login = false) =>
 /** Siti da cui l'annuncio è sparito per 2 importazioni di fila (venduto o tolto?). */
 const goneSites = (l: Listing) => (l.sold ? [] : PLATFORMS.filter((p) => l.status[p]?.state === 'published' && (l.status[p]?.missingCount ?? 0) >= 2))
 /** Venduto: siti dove è ancora pubblicato e va tolto. */
+/** Siti dove l'eliminazione automatica non è riuscita (l'annuncio è ancora online). */
+const removeFailed = (l: Listing) => PLATFORMS.filter((p) => l.status[p]?.edit?.remove && l.status[p]?.edit?.state === 'error')
+
 const toRemove = (l: Listing) => (l.sold ? publishedOn(l).filter((p) => p !== l.sold!.platform) : [])
 
 /** Siti dove l'annuncio online è diverso da Splisto, con cosa cambia (es. "eBay: prezzo"). */
@@ -515,6 +518,12 @@ export function List() {
                         <span className="tag tag-warn">Fermo da {days} giorni, nessun like</span>
                       ) : (
                         days != null && days >= STALE_DAYS && <span className="tag tag-warn">Online da {days} giorni: valuta un ribasso</span>
+                      )}
+                      {l.deleting && <span className="tag tag-warn">Elimino dai siti…</span>}
+                      {removeFailed(l).length > 0 && (
+                        <span className="tag tag-danger" title="Apri l'annuncio: nel pannello Stato trovi il motivo">
+                          Eliminazione non riuscita su {removeFailed(l).map((p) => PLATFORM_LABEL[p]).join(', ')}
+                        </span>
                       )}
                       {toDrop.length > 0 && <span className="tag tag-danger">Venduto: togli da {toDrop.map((p) => PLATFORM_LABEL[p]).join(', ')}</span>}
                       {gone.length > 0 && (

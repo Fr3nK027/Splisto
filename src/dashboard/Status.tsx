@@ -92,7 +92,7 @@ export function Status({ listing, onChanged, onReopen }: Props) {
                   <button className="btn-text accent" onClick={() => saveFields(listing.id, { sold: { platform: p, at: Date.now() } }).then(onChanged)}>
                     Venduto qui
                   </button>
-                  <button className="btn-text" onClick={() => set(p, { state: 'removed', missingCount: 0 })}>
+                  <button className="btn-text" onClick={() => set(p, { state: 'removed', missingCount: 0, edit: undefined })}>
                     Tolto dal sito
                   </button>
                   <button className="btn-text" onClick={() => set(p, { missingCount: 0 })}>
@@ -147,7 +147,7 @@ export function Status({ listing, onChanged, onReopen }: Props) {
                     </a>
                   )}
                   {soldElsewhere ? (
-                    <button className="btn-text accent" onClick={() => set(p, { state: 'removed' })}>
+                    <button className="btn-text accent" onClick={() => set(p, { state: 'removed', edit: undefined })}>
                       Segna rimosso
                     </button>
                   ) : (
